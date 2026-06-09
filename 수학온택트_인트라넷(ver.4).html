@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>밀당PT수학 인트라넷</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sidebar:#1a1f36;
+  --sidebar-hover:rgba(255,255,255,0.08);
+  --sidebar-active:rgba(99,131,247,0.18);
+  --sidebar-text:#c8cfe0;
+  --sidebar-active-text:#ffffff;
+  --topnav:#ffffff;
+  --blue:#3b82f6;
+  --blue2:#eff6ff;
+  --purple:#8b5cf6;
+  --purple2:#f5f3ff;
+  --bg:#f3f4f6;
+  --card:#ffffff;
+  --line:#e5e7eb;
+  --text:#111827;
+  --sub:#6b7280;
+  --green:#10b981;
+  --greenBg:#ecfdf5;
+  --orange:#f59e0b;
+  --orangeBg:#fffbeb;
+  --red:#ef4444;
+  --redBg:#fef2f2;
+  --indigo:#6366f1;
+  --indigoBg:#eef2ff;
+}
+body{height:100vh;overflow:hidden;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Pretendard","Segoe UI",sans-serif;font-size:13px}
+button,input,select{font:inherit}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#1a1f36 0%,#2d3561 50%,#1e2d5a 100%);display:flex;align-items:center;justify-content:center;padding:24px;z-index:10}
+.login-wrap{display:grid;grid-template-columns:380px 400px;gap:72px;align-items:center}
+.login-hero{color:#fff}
+.lh-logo{font-size:11px;font-weight:900;letter-spacing:.15em;color:#93c5fd;margin-bottom:16px;text-transform:uppercase}
+.lh-title{font-size:40px;line-height:1.15;font-weight:950;letter-spacing:-.04em;color:#fff}
+.lh-title span{color:#93c5fd}
+.lh-sub{margin-top:20px;color:rgba(255,255,255,.55);line-height:1.85;font-size:14px}
+.login-box{background:#fff;border-radius:20px;padding:40px 44px;box-shadow:0 40px 100px rgba(0,0,0,.35)}
+.lb-t{font-size:22px;font-weight:950;color:#111827}
+.lb-s{font-size:12px;color:var(--sub);margin:5px 0 26px}
+.lb-lbl{font-size:11px;font-weight:800;color:#374151;margin:14px 0 5px;letter-spacing:.03em}
+.lb-inp{width:100%;height:40px;border:1.5px solid var(--line);border-radius:9px;padding:0 13px;outline:none;color:var(--text);transition:border-color .15s}
+.lb-inp:focus{border-color:var(--blue)}
+.role-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rc{border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .15s;background:#fff}
+.rc.sel{background:var(--blue2);border-color:var(--blue)}
+.rc-t{font-weight:900;font-size:13px;color:#111827}
+.rc-s{font-size:11px;color:var(--sub);margin-top:3px}
+.lb-btn{width:100%;height:44px;border:0;border-radius:10px;background:var(--blue);color:#fff;font-weight:900;font-size:15px;margin-top:20px;cursor:pointer;transition:background .15s}
+.lb-btn:hover{background:#2563eb}
+.lb-note{font-size:11px;color:var(--sub);text-align:center;margin-top:12px}
+
+/* ── SHELL ── */
+#app{display:none;height:100vh;grid-template-rows:56px 1fr}
+.topnav{background:var(--topnav);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:0;padding:0 24px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.tn-logo{display:flex;align-items:center;gap:10px;min-width:212px;border-right:1px solid var(--line);height:56px;padding-right:24px;margin-right:20px}
+.tn-logo-mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--blue),var(--purple));display:grid;place-items:center;color:#fff;font-weight:950;font-size:13px}
+.brand-main{font-size:15px;font-weight:950;letter-spacing:-.03em;color:#111827}
+.brand-sub{font-size:11px;color:var(--sub);font-weight:700}
+.tn-search{flex:1;max-width:320px;height:34px;border:1.5px solid var(--line);border-radius:8px;padding:0 12px 0 34px;background:#f9fafb url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 10px center;outline:none;font-size:13px;color:var(--text)}
+.tn-search:focus{border-color:var(--blue);background-color:#fff}
+.tn-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.tn-icon{width:34px;height:34px;border-radius:8px;background:#f3f4f6;display:grid;place-items:center;cursor:pointer;color:#6b7280;position:relative}
+.tn-icon:hover{background:#e5e7eb}
+.tn-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--red);border:1.5px solid #fff}
+.tn-badge{font-size:11px;font-weight:900;padding:4px 10px;border-radius:20px;background:var(--blue2);color:var(--blue)}
+.tn-badge.admin{background:var(--purple2);color:var(--purple)}
+.tn-user{display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 8px;border-radius:8px}
+.tn-user:hover{background:#f3f4f6}
+.tn-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));display:grid;place-items:center;color:#fff;font-weight:900;font-size:12px}
+.tn-uname{font-size:13px;font-weight:800;color:#111827}
+.tn-urole{font-size:11px;color:var(--sub)}
+
+/* ── LAYOUT ── */
+.main-area{min-height:0;display:grid;grid-template-columns:212px 1fr}
+.sidebar{background:var(--sidebar);display:flex;flex-direction:column;overflow:auto}
+.sb-brand{height:48px;display:flex;align-items:center;gap:8px;padding:0 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sb-brand-mark{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--blue),var(--purple));display:grid;place-items:center;color:#fff;font-weight:950;font-size:11px}
+.sb-brand-name{font-size:13px;font-weight:900;color:#fff;letter-spacing:-.02em}
+.sb-sec{padding:18px 16px 6px;color:rgba(255,255,255,.35);font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+.nav-item{height:34px;margin:1px 8px;padding:0 10px;border-radius:7px;display:flex;align-items:center;gap:8px;color:var(--sidebar-text);cursor:pointer;font-size:12px;font-weight:700;transition:all .12s}
+.nav-item:hover{background:var(--sidebar-hover);color:#fff}
+.nav-item.active{background:var(--sidebar-active);color:var(--sidebar-active-text)}
+.nav-item i{font-size:15px;opacity:.8}
+.nav-item.active i{opacity:1}
+.nav-sub{padding-left:26px;font-size:11px}
+.nav-div{height:1px;background:rgba(255,255,255,.08);margin:8px 0}
+.sb-bot{margin-top:auto;padding:12px;border-top:1px solid rgba(255,255,255,.08)}
+.sb-user{background:rgba(255,255,255,.06);border-radius:10px;padding:12px}
+.sb-un{font-weight:900;color:#fff;font-size:13px}
+.sb-ur{font-size:11px;color:rgba(255,255,255,.45);margin-top:3px}
+.sb-lo{margin-top:10px;color:rgba(255,255,255,.4);font-size:11px;cursor:pointer;display:flex;align-items:center;gap:4px}
+.sb-lo:hover{color:rgba(255,255,255,.7)}
+
+/* ── CONTENT ── */
+.content{overflow:auto;padding:28px 32px 44px;background:var(--bg)}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px}
+.page-title{font-size:22px;font-weight:950;letter-spacing:-.04em;color:#111827}
+.page-desc{font-size:13px;color:var(--sub);margin-top:5px}
+.actions{display:flex;gap:8px;align-items:center}
+.btn{height:34px;border:1.5px solid var(--line);border-radius:8px;background:#fff;padding:0 14px;color:#374151;font-size:12px;font-weight:800;cursor:pointer;transition:all .12s}
+.btn:hover{border-color:#d1d5db;background:#f9fafb}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.primary:hover{background:#2563eb}
+.btn.purple{background:var(--purple);border-color:var(--purple);color:#fff}
+
+/* ── GRID ── */
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g5{grid-template-columns:repeat(5,1fr)}
+.span2{grid-column:span 2}
+.span3{grid-column:span 3}
+
+/* ── PANEL ── */
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.panel-h{height:48px;padding:0 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;font-weight:900;font-size:14px;color:#111827}
+.panel-h .ph-right{display:flex;align-items:center;gap:8px}
+.panel-b{padding:18px}
+
+/* ── KPI CARDS ── */
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.kpi .lbl{font-size:12px;color:var(--sub);font-weight:800}
+.kpi .val{font-size:32px;font-weight:950;letter-spacing:-.06em;margin-top:8px;color:#111827}
+.kpi .unit{font-size:14px;font-weight:700;color:var(--sub);margin-left:2px}
+.kpi .trend{font-size:11px;font-weight:800;margin-top:8px;display:flex;align-items:center;gap:4px}
+.up{color:var(--green)}.down{color:var(--red)}.neutral{color:var(--sub)}
+.kpi.blue .val{color:var(--blue)}
+.kpi.green .val{color:var(--green)}
+.kpi.red .val{color:var(--red)}
+.kpi.purple .val{color:var(--purple)}
+.kpi.orange .val{color:var(--orange)}
+
+/* ── TABLE ── */
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#f9fafb;color:#6b7280;font-size:11px;font-weight:900;letter-spacing:.03em}
+th,td{padding:12px 14px;border-bottom:1px solid #f3f4f6;text-align:left;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:#fafbff}
+.table-wrap{overflow-x:auto}
+
+/* ── TAGS ── */
+.tag{display:inline-flex;align-items:center;height:22px;border-radius:6px;padding:0 8px;font-size:11px;font-weight:900;white-space:nowrap}
+.tag.b{background:var(--blue2);color:var(--blue)}
+.tag.g{background:var(--greenBg);color:var(--green)}
+.tag.o{background:var(--orangeBg);color:var(--orange)}
+.tag.r{background:var(--redBg);color:var(--red)}
+.tag.v{background:var(--purple2);color:var(--purple)}
+.tag.i{background:var(--indigoBg);color:var(--indigo)}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--line);margin-bottom:18px}
+.tab{padding:10px 16px;color:var(--sub);font-weight:800;cursor:pointer;font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .12s}
+.tab:hover{color:#374151}
+.tab.on{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* ── FILTERS ── */
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.select,.search{height:34px;border:1.5px solid var(--line);border-radius:8px;background:#fff;color:#374151;padding:0 12px;font-size:12px;font-weight:700;cursor:pointer}
+.search{min-width:220px;padding-left:34px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 11px center}
+
+/* ── BARS ── */
+.bar-row{display:grid;grid-template-columns:100px 1fr 48px;gap:12px;align-items:center;margin:11px 0;font-size:12px}
+.bar{height:7px;background:#e5e7eb;border-radius:20px;overflow:hidden}
+.fill{height:100%;background:var(--blue);border-radius:20px;transition:width .3s}
+.fill.g{background:var(--green)}.fill.o{background:var(--orange)}.fill.v{background:var(--purple)}.fill.r{background:var(--red)}
+
+/* ── TODO ── */
+.todo{display:grid;grid-template-columns:16px 1fr auto;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid #f3f4f6}
+.todo:last-child{border-bottom:0}
+.check{width:15px;height:15px;border:1.5px solid #d1d5db;border-radius:4px;flex-shrink:0}
+
+/* ── HEAT MAP ── */
+.heat-wrap{overflow-x:auto}
+.heat{display:grid;grid-template-columns:100px 80px repeat(10,1fr) 68px 64px;gap:6px;align-items:center;font-size:12px;margin-bottom:6px;min-width:800px}
+.heat.head{font-weight:900;color:#6b7280;font-size:11px}
+.cell{height:28px;border-radius:6px;display:grid;place-items:center;font-size:11px;font-weight:900}
+.done{background:#bbf7d0;color:#065f46}
+.late{background:#fde68a;color:#92400e}
+.na{background:#f3f4f6;color:#9ca3af}
+.risk{background:#fecaca;color:#991b1b}
+
+/* ── CHART PLACEHOLDER ── */
+.chart-ph{height:180px;border-radius:10px;background:linear-gradient(180deg,#f9fafb,#f3f4f6);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:#d1d5db;font-size:12px;font-weight:700}
+
+/* ── PEOPLE GRID ── */
+.people{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.person{border:1px solid var(--line);border-radius:12px;padding:16px;background:#fff}
+.face{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--blue2),var(--purple2));display:grid;place-items:center;font-weight:950;color:var(--blue);font-size:16px;margin-bottom:10px}
+.p-metric{display:flex;justify-content:space-between;margin-top:7px;font-size:12px}
+.p-metric span{color:var(--sub)}
+.p-metric b{font-weight:900}
+
+/* ── RANK ── */
+.rank{display:grid;grid-template-columns:1fr 120px 36px;gap:12px;align-items:center;margin:12px 0;font-size:12px}
+.hline{height:7px;background:#e5e7eb;border-radius:20px;overflow:hidden}
+.hline span{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--purple))}
+
+/* ── WORK ITEM (todo-list style) ── */
+.work-item{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:12px;padding:13px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;margin-bottom:8px}
+.work-item.clickable{cursor:pointer;transition:all .14s}
+.work-item.clickable:hover{border-color:#bfdbfe;box-shadow:0 8px 22px rgba(17,24,39,.08);transform:translateY(-1px)}
+.work-icon{width:40px;height:40px;border-radius:9px;display:grid;place-items:center;font-weight:950;font-size:15px;color:#fff}
+.wi-blue{background:linear-gradient(135deg,var(--blue),#60a5fa)}
+.wi-green{background:linear-gradient(135deg,var(--green),#34d399)}
+.wi-orange{background:linear-gradient(135deg,var(--orange),#fbbf24)}
+.wi-purple{background:linear-gradient(135deg,var(--purple),#a78bfa)}
+.wi-red{background:linear-gradient(135deg,var(--red),#f87171)}
+.work-item strong{display:block;font-size:13px;font-weight:900;color:#111827}
+.work-item span{display:block;font-size:11px;color:var(--sub);margin-top:2px}
+
+/* ── STATUS CARD ── */
+.stat-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.stat-card label{display:block;font-size:11px;font-weight:900;color:var(--sub);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
+.stat-card .big{font-size:30px;font-weight:950;letter-spacing:-.06em;color:#111827}
+.stat-card .note{font-size:11px;color:var(--sub);margin-top:8px}
+
+/* ── STUDENT CARD VIEW ── */
+.student-board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.student-card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:15px;cursor:pointer;transition:all .14s}
+.student-card:hover,.student-card.on{border-color:#93c5fd;box-shadow:0 10px 24px rgba(17,24,39,.08)}
+.student-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.student-name{font-size:16px;font-weight:950;color:#111827}
+.student-meta{font-size:11px;color:var(--sub);margin-top:3px}
+.student-card p{font-size:12px;line-height:1.6;color:#4b5563;margin-top:11px}
+.student-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.student-note{margin-top:12px;border-top:1px solid #f3f4f6;padding-top:12px}
+.student-note textarea{width:100%;min-height:74px;border:1.5px solid var(--line);border-radius:8px;padding:10px;resize:vertical;outline:none;color:var(--text)}
+.student-note textarea:focus{border-color:var(--blue)}
+.note-list{display:grid;gap:8px;margin-top:10px}
+.note-item{border:1px solid #eef2f7;border-radius:8px;padding:9px 10px;background:#f9fafb;font-size:12px;color:#374151}
+.note-item small{display:block;color:var(--sub);font-size:11px;margin-top:4px}
+.student-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.student-tab{height:34px;border:1.5px solid var(--line);border-radius:8px;background:#fff;padding:0 13px;font-size:12px;font-weight:900;color:#6b7280;cursor:pointer}
+.student-tab.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.student-pane{display:none}.student-pane.on{display:block}
+
+/* ── OPENING PROCESS DETAIL ── */
+.process-layout{display:grid;grid-template-columns:minmax(0,1.45fr) 360px;gap:16px}
+.process-table{min-width:980px}
+.process-table th{text-align:center}
+.process-table td{text-align:center}
+.process-table td:first-child,.process-table th:first-child{text-align:left;position:sticky;left:0;background:#fff;z-index:1}
+.process-cell{min-height:38px;border-radius:8px;border:1px solid transparent;display:flex;align-items:center;justify-content:center;padding:7px;font-size:11px;font-weight:900;cursor:pointer;line-height:1.25}
+.process-cell.done{background:var(--greenBg);color:#047857}
+.process-cell.pending{background:var(--orangeBg);color:#92400e}
+.process-cell.risk{background:var(--redBg);color:#991b1b}
+.process-cell.on{outline:3px solid rgba(59,130,246,.16);border-color:var(--blue)}
+.detail-list{display:grid;gap:10px}
+.detail-item{border:1px solid #eef2f7;border-radius:8px;padding:10px;background:#f9fafb}
+.detail-item label{display:block;font-size:10px;font-weight:900;color:var(--sub);letter-spacing:.04em;margin-bottom:5px}
+.detail-item strong{font-size:13px;color:#111827}
+
+/* ── ACTION ARCHIVE ── */
+.archive-list{display:grid;gap:10px}
+.archive-item{display:grid;grid-template-columns:92px 1fr auto;gap:12px;align-items:start;border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px}
+.archive-date{font-size:12px;font-weight:950;color:#111827}
+.archive-body strong{display:block;font-size:13px}
+.archive-body span{display:block;font-size:12px;color:var(--sub);line-height:1.55;margin-top:3px}
+
+/* ── MODAL ── */
+.modal{position:fixed;inset:0;background:rgba(17,24,39,.45);display:none;align-items:center;justify-content:center;padding:24px;z-index:20}
+.modal.show{display:flex}
+.modal-box{width:min(640px,100%);max-height:86vh;overflow:auto;background:#fff;border-radius:12px;border:1px solid var(--line);box-shadow:0 28px 80px rgba(0,0,0,.22)}
+.modal-h{height:54px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-size:15px;font-weight:950}
+.modal-x{width:32px;height:32px;border:0;border-radius:8px;background:#f3f4f6;cursor:pointer;color:#6b7280}
+.modal-b{padding:18px}
+
+/* ── METRIC TABLE PROGRESS ── */
+.prog{width:80px;height:7px;border-radius:4px;background:#e5e7eb;overflow:hidden;display:inline-block;vertical-align:middle}
+.prog i{display:block;height:100%;border-radius:4px;background:var(--blue)}
+.prog.g i{background:var(--green)}
+.prog.o i{background:var(--orange)}
+.prog.r i{background:var(--red)}
+
+/* ── RADAR SVG ── */
+.radar{display:flex;align-items:center;justify-content:center;padding:8px}
+
+/* ── NOTICE ── */
+.notice-item{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid #f3f4f6;font-size:12px}
+.notice-item:last-child{border-bottom:0}
+.notice-item span{color:#111827;font-weight:700}
+.notice-item small{color:var(--sub);flex-shrink:0}
+
+/* ── GUIDE CARD ── */
+.guide-step{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid #f3f4f6}
+.guide-step:last-child{border-bottom:0}
+.gs-num{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:950;flex-shrink:0;margin-top:1px}
+.gs-num.b{background:var(--blue2);color:var(--blue)}
+.gs-num.o{background:var(--orangeBg);color:var(--orange)}
+.gs-num.r{background:var(--redBg);color:var(--red)}
+.gs-num.g{background:var(--greenBg);color:var(--green)}
+.gs-text{font-size:12px;font-weight:700;color:#374151}
+.gs-sub{font-size:11px;color:var(--sub);margin-top:2px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:960px){
+  body{overflow:auto}
+  .login-wrap{grid-template-columns:1fr}
+  .main-area{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .content{padding:18px}
+  .g2,.g3,.g4,.g5{grid-template-columns:1fr 1fr}
+  .span2,.span3{grid-column:auto}
+  .people{grid-template-columns:1fr 1fr}
+  .student-board{grid-template-columns:1fr}
+  .process-layout{grid-template-columns:1fr}
+  .archive-item{grid-template-columns:1fr}
+  #app{grid-template-rows:56px 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="login-screen">
+  <div class="login-wrap">
+    <section class="login-hero">
+      <div class="lh-logo">MILDANG PT MATH</div>
+      <div class="lh-title">팀원이 출근하면<br><span>해야 할 일이 보이는</span><br>인트라넷</div>
+      <p class="lh-sub">개강 프로세스 · 학생 DB · STT 평가<br>도래자 · 내신 프로세스 통합 관리</p>
+    </section>
+    <section class="login-box">
+      <div class="lb-t">로그인</div>
+      <div class="lb-s">밀당PT수학 임직원 전용</div>
+      <div class="lb-lbl">이메일</div>
+      <input class="lb-inp" value="jaehyun@mathontact.com">
+      <div class="lb-lbl">비밀번호</div>
+      <input class="lb-inp" type="password" value="password">
+      <div class="lb-lbl">역할 선택 (데모)</div>
+      <div class="role-row">
+        <div class="rc sel" id="role-teacher" onclick="selectRole('teacher')">
+          <div class="rc-t">선생님</div>
+          <div class="rc-s">팀원 · 김밀당</div>
+        </div>
+        <div class="rc" id="role-admin" onclick="selectRole('admin')">
+          <div class="rc-t">관리자</div>
+          <div class="rc-s">팀장+ · 정재현</div>
+        </div>
+      </div>
+      <button class="lb-btn" onclick="login()">로그인</button>
+      <div class="lb-note">역할에 따라 접속 가능한 메뉴가 달라집니다.</div>
+    </section>
+  </div>
+</div>
+
+<!-- ══ APP SHELL ══ -->
+<div id="app">
+  <header class="topnav">
+    <div class="tn-logo">
+      <div class="tn-logo-mark">M</div>
+      <div>
+        <div class="brand-main">밀당PT수학</div>
+        <div class="brand-sub">인트라넷</div>
+      </div>
+    </div>
+    <input class="tn-search" placeholder="학생명, 업무 검색...">
+    <div class="tn-right">
+      <div class="tn-icon"><i class="ti ti-bell" style="font-size:16px"></i><span class="tn-dot"></span></div>
+      <span class="tn-badge" id="tn-badge">선생님</span>
+      <div class="tn-user">
+        <div class="tn-av" id="tn-av">김</div>
+        <div>
+          <div class="tn-uname" id="tn-name">김밀당</div>
+          <div class="tn-urole" id="tn-role">B팀 · 선생님</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-area">
+    <aside class="sidebar">
+      <div class="sb-brand">
+        <div class="sb-brand-mark">M</div>
+        <div class="sb-brand-name">밀당PT수학</div>
+      </div>
+      <nav id="teacher-menu">
+        <div class="sb-sec">내 업무</div>
+        <div class="nav-item" data-page="t-home"><i class="ti ti-checkbox"></i>To-Do List</div>
+        <div class="nav-item" data-page="t-my"><i class="ti ti-chart-bar"></i>KPI</div>
+        <div class="nav-div"></div>
+        <div class="sb-sec">학생 관리</div>
+        <div class="nav-item" data-page="t-students"><i class="ti ti-users"></i>학생관리</div>
+        <div class="nav-div"></div>
+        <div class="sb-sec">프로세스</div>
+        <div class="nav-item" data-page="t-process"><i class="ti ti-list-check"></i>개강 프로세스</div>
+        <div class="nav-item" data-page="t-dorae"><i class="ti ti-clock-check"></i>도래자 프로세스</div>
+        <div class="nav-item" data-page="t-naeshin"><i class="ti ti-school"></i>내신 프로세스</div>
+        <div class="nav-div"></div>
+        <div class="sb-sec">액션</div>
+        <div class="nav-item" data-page="t-action"><i class="ti ti-clipboard-check"></i>액션 기록</div>
+        <div class="nav-item" data-page="t-guide"><i class="ti ti-book"></i>상담 가이드</div>
+      </nav>
+      <nav id="admin-menu" style="display:none">
+        <div class="sb-sec">본부 현황</div>
+        <div class="nav-item" data-page="a-home"><i class="ti ti-home"></i>홈 (본부 현황)</div>
+        <div class="nav-item" data-page="a-bonbu"><i class="ti ti-chart-pie"></i>수학본부 대시보드</div>
+        <div class="nav-item" data-page="a-sil"><i class="ti ti-building"></i>실별 현황</div>
+        <div class="nav-item" data-page="a-team"><i class="ti ti-users-group"></i>팀별 현황</div>
+        <div class="nav-div"></div>
+        <div class="sb-sec">학생 · 선생님</div>
+        <div class="nav-item" data-page="a-db"><i class="ti ti-database"></i>전체 학생 DB</div>
+        <div class="nav-item" data-page="a-teacher"><i class="ti ti-user-check"></i>선생님 현황</div>
+        <div class="nav-div"></div>
+        <div class="sb-sec">분석 · 관리</div>
+        <div class="nav-item" data-page="a-eval"><i class="ti ti-chart-bar"></i>평가 분석</div>
+        <div class="nav-item" data-page="a-perm"><i class="ti ti-shield-lock"></i>권한 관리</div>
+      </nav>
+      <div class="sb-bot">
+        <div class="sb-user">
+          <div class="sb-un" id="sb-name">김밀당</div>
+          <div class="sb-ur" id="sb-role">선생님 · B팀</div>
+          <div class="sb-lo" onclick="logout()"><i class="ti ti-logout"></i> 로그아웃</div>
+        </div>
+      </div>
+    </aside>
+    <main class="content" id="content"></main>
+  </div>
+</div>
+
+<div class="modal" id="detail-modal" aria-hidden="true">
+  <div class="modal-box">
+    <div class="modal-h">
+      <span id="modal-title">상세 내용</span>
+      <button class="modal-x" type="button" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-b" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+let role='teacher';
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+
+function selectRole(next){
+  role=next;
+  $('#role-teacher').classList.toggle('sel',next==='teacher');
+  $('#role-admin').classList.toggle('sel',next==='admin');
+}
+
+function login(){
+  $('#login-screen').style.display='none';
+  $('#app').style.display='grid';
+  const admin=role==='admin';
+  $('#teacher-menu').style.display=admin?'none':'block';
+  $('#admin-menu').style.display=admin?'block':'none';
+  $('#tn-badge').textContent=admin?'관리자':'선생님';
+  $('#tn-badge').classList.toggle('admin',admin);
+  $('#tn-name').textContent=admin?'정재현':'김밀당';
+  $('#tn-av').textContent=admin?'정':'김';
+  $('#tn-role').textContent=admin?'관리자 · 본부장':'B팀 · 선생님';
+  $('#sb-name').textContent=admin?'정재현':'김밀당';
+  $('#sb-role').textContent=admin?'관리자 · 본부장':'선생님 · B팀';
+  go(admin?'a-home':'t-home');
+}
+
+function logout(){location.reload()}
+
+function go(id){
+  $$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.page===id));
+  $('#content').innerHTML=pages[id]?pages[id]():'<div style="padding:40px;color:#9ca3af">준비 중입니다.</div>';
+}
+
+document.addEventListener('click',e=>{
+  const item=e.target.closest('.nav-item');
+  if(item&&item.dataset.page)go(item.dataset.page);
+  if(e.target.id==='detail-modal')closeModal();
+});
+
+// ── helpers ──
+const H=(title,desc,action='')=>`<div class="page-head"><div><h1 class="page-title">${title}</h1><p class="page-desc">${desc}</p></div><div class="actions">${action}</div></div>`;
+const KPI=(l,v,u,cls,trend,dir='up')=>`<div class="kpi ${cls}"><div class="lbl">${l}</div><div class="val">${v}<span class="unit">${u}</span></div><div class="trend ${dir}">${trend}</div></div>`;
+const PANEL=(t,b,right='')=>`<section class="panel"><div class="panel-h"><span>${t}</span><div class="ph-right">${right}</div></div><div class="panel-b">${b}</div></section>`;
+const TAG=(t,c='b')=>`<span class="tag ${c}">${t}</span>`;
+const BAR=(l,w,c='')=>`<div class="bar-row"><span>${l}</span><div class="bar"><div class="fill ${c}" style="width:${w}%"></div></div><b>${w}%</b></div>`;
+const ROW=a=>`<tr>${a.map(c=>`<td>${c}</td>`).join('')}</tr>`;
+const TABLE=(heads,rows)=>`<div class="table-wrap"><table><thead><tr>${heads.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(ROW).join('')}</tbody></table></div>`;
+const TABS=items=>`<div class="tabs">${items.map((x,i)=>`<div class="tab ${i===0?'on':''}">${x}</div>`).join('')}</div>`;
+const PROG=(w,c='')=>`<span class="prog ${c}"><i style="width:${w}%"></i></span>`;
+
+const workDetails={
+  opening:{title:'개강 프로세스',tag:'7건',items:['김민서 개강 전 설문 미응답 확인','고나원 진단고사 결과 업로드 대기','최서연 1주차 학습 계획 공유','이도윤 위험군 컨택 기록 필요']},
+  dorae:{title:'도래자 프로세스',tag:'3건',items:['김민수 D-7 재결제 안내','박지율 D-3 학부모 상담 예약','최하늘 D-Day 긴급 컨택']},
+  naeshin:{title:'내신 프로세스',tag:'5건',items:['이서윤 기출 분석 리포트 발송','최서연 시험 후 상담 일정 확정','김민서 오답 유형 정리','박지율 학교별 범위 확인']},
+  special:{title:'특강 프로세스',tag:'2건',items:['방학 특강 추천 대상자 미응답 후속 연락','정규반 전환 가능 학생 상담 메모']}
+};
+
+const studentCards=[
+  {name:'김민서',grade:'고1',group:'김민서',school:'유성여고',course:'고2 내신 집중',status:'개강 1일차',risk:'위험군',note:'기본기 부족을 인지하고 있으며 고난도 문제에서 포기 반응이 빠름',logs:['2026.06.09 비정기 테스트: 함수 단원 62점','2026.06.08 보호자 상담: 학습 루틴 보완 요청']},
+  {name:'고나원',grade:'중2',group:'고나원',school:'중산중',course:'공통수학1',status:'개강예정',risk:'판정 전',note:'루틴 관리와 반복 학습 요청이 강함',logs:['2026.06.09 개강 전 설문 미응답 안내','2026.06.07 진단고사 예약 확인']},
+  {name:'최서연',grade:'고2',group:'최서연',school:'대치고',course:'방학 특강',status:'개강 7일차',risk:'일반',note:'특강 이후 정규반 전환 가능성 있음',logs:['2026.06.09 비정기 테스트: 미적분 78점','2026.06.06 상담: 특강 후 정규반 전환 논의']},
+  {name:'이도윤',grade:'고3',group:'이도윤',school:'분당고',course:'고3 정규',status:'이관 검토',risk:'관찰',note:'첫 상담 예약 필요, 보호자 피드백 선호',logs:['2026.06.08 이관 요청 접수','2026.06.05 보호자 통화 부재']},
+  {name:'박지율',grade:'중3',group:'박지율',school:'목동중',course:'중3 내신',status:'도래 D-3',risk:'일반',note:'시험 전 실전 연습량 확대 필요',logs:['2026.06.09 도래자 컨택 완료','2026.06.04 내신 리포트 발송']},
+  {name:'정우진',grade:'고1',group:'정우진',school:'송파고',course:'공통수학2',status:'명령지 검토',risk:'관찰',note:'출결 변동이 있어 학부모 확인 필요',logs:['2026.06.08 명령지 검토 요청','2026.06.03 출결 상담 기록']}
+];
+
+const actionArchive=[
+  {student:'김민서',date:'2026.06.09',type:'개강 프로세스',body:'개강 1일차 위험군 컨택 미실행 확인. 학부모 재안내 필요.'},
+  {student:'김민서',date:'2026.06.08',type:'상담 기록',body:'보호자 상담 진행. 학습 루틴 보완과 오답노트 점검 요청.'},
+  {student:'김민서',date:'2026.06.07',type:'비정기 테스트',body:'함수 단원 62점. 기본 개념 재확인 과제 부여.'},
+  {student:'고나원',date:'2026.06.09',type:'개강 프로세스',body:'개강 전 설문 미응답. 문자 재발송 후 유선 컨택 예정.'},
+  {student:'최서연',date:'2026.06.09',type:'비정기 테스트',body:'미적분 78점. 특강 이후 정규반 전환 가능성 높음.'},
+  {student:'박지율',date:'2026.06.09',type:'도래자 프로세스',body:'D-3 도래 컨택 완료. 학부모 상담 6월 12일 예약.'},
+  {student:'정우진',date:'2026.06.08',type:'명령지',body:'출결 관리 안내 명령지 검토 요청. 팀장 확인 대기.'}
+];
+
+function openModal(title,body){
+  $('#modal-title').textContent=title;
+  $('#modal-body').innerHTML=body;
+  $('#detail-modal').classList.add('show');
+  $('#detail-modal').setAttribute('aria-hidden','false');
+}
+function closeModal(){
+  $('#detail-modal').classList.remove('show');
+  $('#detail-modal').setAttribute('aria-hidden','true');
+}
+function showWorkDetail(key){
+  const d=workDetails[key];
+  openModal(d.title,`<div class="grid">${d.items.map((x,i)=>`<div class="work-item"><div class="work-icon ${['wi-blue','wi-orange','wi-purple','wi-green'][i%4]}">${i+1}</div><div><strong>${x}</strong><span>담당: 김밀당 · 오늘 처리 필요</span></div>${TAG(i===0?'긴급':'대기',i===0?'r':'b')}</div>`).join('')}</div>`);
+}
+function showStudentDetail(name){
+  const s=studentCards.find(x=>x.name===name);
+  if(!s)return;
+  openModal(`${s.name} 상세 카드`,`<div class="detail-list">
+    <div class="detail-item"><label>학생 그룹</label><strong>${s.group}</strong></div>
+    <div class="detail-item"><label>학교/과정</label><strong>${s.school} · ${s.course}</strong></div>
+    <div class="detail-item"><label>현재 상태</label><strong>${s.status} · ${s.risk}</strong></div>
+    <div class="detail-item"><label>관리 메모</label><strong>${s.note}</strong></div>
+    <div class="detail-item"><label>최근 기록</label><strong>${s.logs.join('<br>')}</strong></div>
+  </div>`);
+}
+function addStudentNote(name){
+  const area=document.querySelector(`[data-note-input="${name}"]`);
+  const list=document.querySelector(`[data-note-list="${name}"]`);
+  if(!area||!list||!area.value.trim())return;
+  const item=document.createElement('div');
+  item.className='note-item';
+  item.innerHTML=`${area.value.trim()}<small>방금 추가 · 김밀당</small>`;
+  list.prepend(item);
+  area.value='';
+}
+function switchStudentPane(key){
+  $$('.student-tab').forEach(x=>x.classList.toggle('on',x.dataset.studentTab===key));
+  $$('.student-pane').forEach(x=>x.classList.toggle('on',x.dataset.studentPane===key));
+}
+function selectProcessCell(el){
+  $$('.process-cell').forEach(x=>x.classList.remove('on'));
+  el.classList.add('on');
+  $('#process-detail-title').textContent=el.dataset.student+' · '+el.dataset.step;
+  $('#process-detail-body').innerHTML=`<div class="detail-list">
+    <div class="detail-item"><label>액션</label><strong>${el.dataset.action}</strong></div>
+    <div class="detail-item"><label>상태</label><strong>${el.textContent.trim()}</strong></div>
+    <div class="detail-item"><label>다음 처리</label><strong>${el.dataset.next}</strong></div>
+  </div>`;
+}
+function filterArchive(value){
+  const q=value.trim();
+  $$('.archive-item').forEach(item=>{
+    item.style.display=item.dataset.student.includes(q)||item.textContent.includes(q)?'grid':'none';
+  });
+}
+
+// ── pages ──
+const pages={
+
+'t-home':()=>H('To-Do List','오늘 처리해야 할 상담, 액션, 미완료 프로세스를 한 화면에서 확인합니다.')+
+`<div class="grid g3">
+  ${KPI('오늘 상담 예정','5','건','blue','전일 대비 +1건')}
+  ${KPI('오늘 액션 예정','12','건','green','처리 완료 8건','neutral')}
+  ${KPI('미완료 프로세스','3','건','orange','지연 위험 1건','down')}
+</div>
+<section class="panel" style="margin-top:16px">
+  <div class="panel-h"><span>오늘 처리 필요 업무</span>${TAG('총 17건','r')}</div>
+  <div class="panel-b">
+    <div class="work-item clickable" onclick="showWorkDetail('opening')"><div class="work-icon wi-blue">개</div><div><strong>개강 프로세스</strong><span>개강전 설문 4건, 첫주 컨택 3건 확인 필요</span></div>${TAG('7건','r')}</div>
+    <div class="work-item clickable" onclick="showWorkDetail('dorae')"><div class="work-icon wi-orange">도</div><div><strong>도래자 프로세스</strong><span>재결제 도래 D-7 대상 컨택 필요</span></div>${TAG('3건','b')}</div>
+    <div class="work-item clickable" onclick="showWorkDetail('naeshin')"><div class="work-icon wi-purple">내</div><div><strong>내신 프로세스</strong><span>리포트 발송 2건, 상담 예약 확인 3건</span></div>${TAG('5건','o')}</div>
+    <div class="work-item clickable" onclick="showWorkDetail('special')"><div class="work-icon wi-green">특</div><div><strong>특강 프로세스</strong><span>추천 대상 미응답자 후속 연락 필요</span></div>${TAG('2건','i')}</div>
+  </div>
+</section>`,
+
+'t-my':()=>H('KPI','개인 KPI와 본부 목표 대비 현황을 확인합니다.')+
+`<div class="grid g4">
+  ${KPI('연장률','84','%','blue','목표 85% ▼ 1%','down')}
+  ${KPI('이탈률','6.8','%','green','목표 8% 이하 달성')}
+  ${KPI('신규전액환불률','3.2','%','purple','목표 4% 이하 달성')}
+  ${KPI('액션 수행률','91','%','orange','목표 90% ▲ 1%')}
+</div>
+<section class="panel" style="margin-top:16px">
+  <div class="panel-h"><span>목표 및 지표 현황</span>${TAG('2026년 6월 기준','b')}</div>
+  <div class="panel-b">
+    ${TABLE(
+      ['지표','개인 목표','현재 지표','소속 팀 평균','달성률','상태'],
+      [
+        ['연장률','85%','84%','82%',PROG(99,'o')+'&nbsp;99%',TAG('근접','o')],
+        ['이탈률','8% 이하','6.8%','7.4%',PROG(100,'g')+'&nbsp;양호',TAG('달성','g')],
+        ['신규전액환불률','4% 이하','3.2%','3.8%',PROG(100,'g')+'&nbsp;양호',TAG('달성','g')],
+        ['액션 수행률','90%','91%','88%',PROG(101,'g')+'&nbsp;101%',TAG('초과','g')],
+      ]
+    )}
+  </div>
+</section>
+<div class="grid g2" style="margin-top:16px">
+  ${PANEL('월간 지표 추이',
+    BAR('연장률',84,'b')+BAR('이탈 방어',93,'g')+BAR('환불 방어',92,'v')+BAR('액션 수행',91,'o')
+  )}
+  ${PANEL('이달의 액션 대기',
+    `<div class="todo"><span class="check"></span><span>이서윤 학습 10일 트래킹</span>${TAG('D-4','r')}</div>
+     <div class="todo"><span class="check"></span><span>박지율 리포트 제작</span>${TAG('D-2','r')}</div>
+     <div class="todo"><span class="check"></span><span>최하늘 STT 평가</span>${TAG('D-1','o')}</div>
+     <div class="todo"><span class="check"></span><span>김민수 도래자 컨택</span>${TAG('오늘','r')}</div>
+     <div class="todo"><span class="check"></span><span>정우진 개강 세팅 확인</span>${TAG('D-3','o')}</div>`
+  )}
+</div>`,
+
+'t-students':()=>H('학생관리','개강, 이관, 명령지를 하나의 탭에서 관리하고 담당 학생을 카드 뷰로 확인합니다.','<button class="btn primary">+ 학생 기록 추가</button>')+
+`<section class="panel">
+  <div class="panel-h"><span>담당 학생 카드</span>${TAG('김밀당 선생님','b')}</div>
+  <div class="panel-b">
+    <div class="student-board">
+      ${studentCards.map(s=>`<article class="student-card" onclick="showStudentDetail('${s.name}')">
+        <div class="student-top"><div><div class="student-name">${s.name}</div><div class="student-meta">${s.grade} · ${s.school} · ${s.course}</div></div>${TAG(s.status,s.status.includes('도래')?'o':s.risk==='위험군'?'r':'b')}</div>
+        <p>${s.note}</p>
+        <div class="student-chips">${TAG(s.group,'i')}${TAG(s.risk,s.risk==='위험군'?'r':s.risk==='관찰'?'o':'g')}</div>
+        <div class="student-note" onclick="event.stopPropagation()">
+          <textarea data-note-input="${s.name}" placeholder="비정기 테스트 또는 상담 기록 입력"></textarea>
+          <button class="btn primary" style="margin-top:8px" onclick="addStudentNote('${s.name}')">기록 추가</button>
+          <div class="note-list" data-note-list="${s.name}">${s.logs.map(x=>`<div class="note-item">${x}<small>기존 기록 · 김밀당</small></div>`).join('')}</div>
+        </div>
+      </article>`).join('')}
+    </div>
+  </div>
+</section>
+<section class="panel" style="margin-top:16px">
+  <div class="panel-h"><span>개강 / 이관 / 명령지</span></div>
+  <div class="panel-b">
+    <div class="student-tabs">
+      <button class="student-tab on" data-student-tab="opening" onclick="switchStudentPane('opening')">개강</button>
+      <button class="student-tab" data-student-tab="transfer" onclick="switchStudentPane('transfer')">이관</button>
+      <button class="student-tab" data-student-tab="command" onclick="switchStudentPane('command')">명령지</button>
+    </div>
+    <div class="student-pane on" data-student-pane="opening">${TABLE(['학생명','개강일','현재 단계','진행률','상태'],[
+      ['김민서','2026.06.08','개강 1일차',PROG(34,'o'),TAG('위험군','r')],
+      ['고나원','2026.06.12','개강예정',PROG(12,'o'),TAG('대기','o')],
+      ['최서연','2026.06.01','개강 7일차',PROG(86,'g'),TAG('진행중','b')]
+    ])}</div>
+    <div class="student-pane" data-student-pane="transfer">${TABLE(['학생명','구분','이관 사유','요청일','상태'],[
+      ['이도윤','이관 받기','고3 정규반 배정','2026.06.08',TAG('검토중','o')],
+      ['김민서','이관 보내기','내신 집중반 이동','2026.06.06',TAG('팀장승인','b')],
+      ['최서연','이관 이력','방학 특강 담당 변경','2026.05.31',TAG('완료','g')]
+    ])}</div>
+    <div class="student-pane" data-student-pane="command">${TABLE(['제목','대상 학생','작성일','상태','승인일'],[
+      ['출결 관리 안내','정우진','2026.06.08',TAG('검토중','o'),'-'],
+      ['기본기 보강 상담','김민서','2026.06.07',TAG('작성중','b'),'-'],
+      ['특강 전환 안내','최서연','2026.06.06',TAG('승인완료','g'),'2026.06.07']
+    ])}</div>
+  </div>
+</section>`,
+
+'t-process':()=>H('개강 프로세스','개강 학생별 액션 진행 상황과 세부 내용을 확인합니다.')+
+`<div class="grid g4" style="margin-bottom:16px">
+  ${KPI('관리 학생','3','명','blue','김밀당 담당')}
+  ${KPI('완료 액션','14','건','green','전일 대비 +4건')}
+  ${KPI('대기 액션','7','건','orange','오늘 처리 필요')}
+  ${KPI('위험 액션','2','건','red','즉시 확인','down')}
+</div>
+<section class="panel">
+  <div class="panel-h"><span>개강 프로세스 보드</span>${TAG('참고 페이지 구성 반영','b')}</div>
+  <div class="panel-b process-layout">
+    <div class="table-wrap">
+      <table class="process-table">
+        <thead><tr><th>학생</th><th>개강 전 설문</th><th>진단고사</th><th>개강 후 설문</th><th>1일차 공유</th><th>위험군 컨택</th><th>1주차 계획</th><th>환불 방어</th></tr></thead>
+        <tbody>
+          ${[
+            ['김민서',['done','설문 완료'],['done','결과 있음'],['pending','응답 대기'],['pending','추천 생성'],['risk','미실행'],['pending','생성 대기'],['pending','유선 예정']],
+            ['고나원',['pending','미응답'],['pending','대기'],['pending','대기'],['pending','대기'],['pending','판정 전'],['pending','대기'],['pending','대기']],
+            ['최서연',['done','완료'],['done','결과 있음'],['done','완료'],['done','공유 완료'],['done','일반/완료'],['done','공유 완료'],['done','유선 완료']]
+          ].map(row=>`<tr><td><b>${row[0]}</b><div style="color:var(--sub);font-size:11px">김밀당 담당</div></td>${row.slice(1).map((c,i)=>`<td><span class="process-cell ${c[0]} ${row[0]==='김민서'&&i===4?'on':''}" onclick="selectProcessCell(this)" data-student="${row[0]}" data-step="${['개강 전 설문','진단고사','개강 후 설문','1일차 공유','위험군 컨택','1주차 계획','환불 방어'][i]}" data-action="${c[1]}" data-next="${c[0]==='done'?'완료 기록 유지':c[0]==='risk'?'학부모 유선 컨택 후 기록 저장':'오늘 중 완료 처리'}">${c[1]}</span></td>`).join('')}</tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <aside class="panel" style="box-shadow:none">
+      <div class="panel-h"><span id="process-detail-title">김민서 · 위험군 컨택</span></div>
+      <div class="panel-b" id="process-detail-body">
+        <div class="detail-list">
+          <div class="detail-item"><label>액션</label><strong>미실행</strong></div>
+          <div class="detail-item"><label>상태</label><strong>위험군 컨택 필요</strong></div>
+          <div class="detail-item"><label>다음 처리</label><strong>학부모 유선 컨택 후 기록 저장</strong></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>`,
+
+'t-dorae':()=>H('도래자 프로세스','도래 시점별 상담과 후속 액션을 관리합니다.')+
+`<div class="grid g4" style="margin-bottom:16px">
+  ${KPI('금주 도래자','14','명','blue','오늘 컨택 4명')}
+  ${KPI('D-7 대상','6','명','orange','컨택 미완료 2명','down')}
+  ${KPI('D-3 대상','5','명','purple','오늘 처리 필요','down')}
+  ${KPI('D-Day 대상','3','명','red','긴급 컨택 필요','down')}
+</div>`+
+PANEL('도래자 목록',
+  TABLE(
+    ['학생명','구분','D-day','예정일','담당','상태','액션'],
+    [
+      ['김민수','환기 도래','D-7','2026.06.16','김선생',TAG('진행중','b'),TAG('컨택','b')],
+      ['이서윤','퇴원 도래','D-3','2026.06.12','김선생',TAG('진행중','b'),TAG('컨택','b')],
+      ['박지율','환기 도래','D-1','2026.06.10','김선생',TAG('일정 필요','o'),TAG('예약','o')],
+      ['최하늘','환기 도래','D-Day','2026.06.09','김선생',TAG('도래 당일','r'),TAG('긴급','r')],
+    ]
+  )
+),
+
+'t-naeshin':()=>H('내신 프로세스','시험 일정과 현재 대비 단계를 확인합니다.')+
+TABS(['전체','예정','진행중','완료'])+
+PANEL('내신 대비 목록',
+  TABLE(
+    ['학생명','학교','시험일','현재 단계','진행률','상태'],
+    [
+      ['김민수','OO중','2026.06.20','계획 수립',PROG(20,'b'),TAG('진행중','b')],
+      ['이서윤','OO고','2026.06.22','기출 분석',PROG(45,'b'),TAG('진행중','b')],
+      ['박지율','OO중','2026.06.25','실전 대비',PROG(70,'o'),TAG('진행중','b')],
+      ['최하늘','OO고','2026.06.28','시험 완료',PROG(100,'g'),TAG('완료','g')],
+    ]
+  )
+),
+
+'t-action':()=>H('액션 기록','학생을 검색하면 해당 학생에게 수행된 모든 액션이 아카이빙되어 표시됩니다.','<button class="btn primary">+ 새 액션</button>')+
+`<div class="filters"><input class="search" placeholder="학생명 검색" oninput="filterArchive(this.value)"><button class="select">액션 유형 ▾</button><button class="select">기간 ▾</button></div>`+
+PANEL('학생별 액션 아카이브',
+  `<div class="archive-list">
+    ${actionArchive.map(a=>`<div class="archive-item" data-student="${a.student}">
+      <div class="archive-date">${a.date}</div>
+      <div class="archive-body"><strong>${a.student} · ${a.type}</strong><span>${a.body}</span></div>
+      ${TAG(a.type.includes('도래')?'도래':a.type.includes('명령')?'명령지':a.type.includes('테스트')?'테스트':'기록',a.type.includes('도래')?'o':a.type.includes('명령')?'i':'b')}
+    </div>`).join('')}
+  </div>`
+),
+
+'t-guide':()=>H('상담 가이드','상담 상황별 권장 스크립트와 체크 포인트입니다.')+
+`<div class="grid g3">
+  ${PANEL('신규 상담',`
+    <div class="guide-step"><div class="gs-num b">1</div><div><div class="gs-text">현재 학습 목표와 불편 지점 확인</div><div class="gs-sub">학생/학부모 기대치 파악 후 메모</div></div></div>
+    <div class="guide-step"><div class="gs-num b">2</div><div><div class="gs-text">개강 후 10일 프로세스 안내</div><div class="gs-sub">진단고사 → 피드백 → 리포트 흐름 설명</div></div></div>
+    <div class="guide-step"><div class="gs-num b">3</div><div><div class="gs-text">개강 전 설문 링크 발송</div><div class="gs-sub">학부모/학생 구분 발송 필수</div></div></div>
+  `)}
+  ${PANEL('이관 상담',`
+    <div class="guide-step"><div class="gs-num o">1</div><div><div class="gs-text">이관 사유와 기대 효과 정리</div><div class="gs-sub">팀장 사전 승인 여부 확인</div></div></div>
+    <div class="guide-step"><div class="gs-num o">2</div><div><div class="gs-text">새 담당 선생님 인수인계 진행</div><div class="gs-sub">학생 DB 및 특이사항 공유</div></div></div>
+    <div class="guide-step"><div class="gs-num o">3</div><div><div class="gs-text">이관 완료 후 학부모 안내</div><div class="gs-sub">변경 내용 명확히 전달</div></div></div>
+  `)}
+  ${PANEL('환불 방어',`
+    <div class="guide-step"><div class="gs-num r">1</div><div><div class="gs-text">불만 원인 분류 후 개선안 제시</div><div class="gs-sub">STT 분석 결과 참고</div></div></div>
+    <div class="guide-step"><div class="gs-num r">2</div><div><div class="gs-text">관리자 동행 상담 요청</div><div class="gs-sub">위험군 판단 시 즉시 에스컬레이션</div></div></div>
+    <div class="guide-step"><div class="gs-num r">3</div><div><div class="gs-text">환불 방어 STT 후 평가 등록</div><div class="gs-sub">5개 항목 평가 완료 필수</div></div></div>
+  `)}
+</div>`,
+
+// ── ADMIN PAGES ──
+'a-home':()=>H('홈 (본부 현황)','본부 핵심 지표와 실별 흐름을 요약합니다.')+
+`<div class="grid g5" style="margin-bottom:16px">
+  ${KPI('재원생','2,350','명','blue','▲ 12% 전팀 대비')}
+  ${KPI('신규 전액','132','명','green','▲ 8%')}
+  ${KPI('연장률','92','%','purple','▲ 3%')}
+  ${KPI('이탈률','8','%','red','▼ 2%','down')}
+  ${KPI('NPS','78','점','orange','▲ 5점')}
+</div>
+<div class="grid g2">
+  ${PANEL('본부 KPI 추이','<div class="chart-ph">📈 KPI 추이 차트 (연동 예정)</div>')}
+  ${PANEL('실별 연장 현황 (연장률)',
+    BAR('강남실',94,'g')+BAR('분당실',91,'g')+BAR('대치실',89,'g')+BAR('목동실',87,'g')+BAR('송파실',85,'g')
+  )}
+</div>
+<div class="grid g3" style="margin-top:16px">
+  ${PANEL('팀별 현황 TOP 5 (연장률)',
+    TABLE(['순위','팀명','연장률','목표대비'],[
+      ['1',TAG('강남 중등팀','g'),'96%',TAG('+6%','g')],
+      ['2',TAG('대치 고등팀','b'),'93%',TAG('+3%','b')],
+      ['3',TAG('분당 중등팀','b'),'91%',TAG('+1%','b')],
+      ['4',TAG('강남 고등팀','o'),'90%',TAG('0%','o')],
+      ['5',TAG('목동 중등팀','r'),'88%',TAG('-2%','r')],
+    ])
+  )}
+  ${PANEL('선생님 현황 TOP 5 (연장률)',
+    TABLE(['순위','선생님','연장률','STT'],[
+      ['1','이선생','98%','4.6'],
+      ['2','박선생','95%','4.5'],
+      ['3','최선생','94%','4.3'],
+      ['4','김선생','92%','4.2'],
+      ['5','정선생','91%','4.1'],
+    ])
+  )}
+  ${PANEL('위험 지표 현황',
+    `<div class="work-item" style="border-color:#fecaca;background:#fef2f2"><div class="work-icon wi-red" style="font-size:12px">이탈</div><div><strong style="color:#991b1b">이탈 위험 학생</strong><span>즉시 컨택 필요</span></div>${TAG('23명','r')}</div>
+     <div class="work-item" style="border-color:#fde68a;background:#fffbeb"><div class="work-icon wi-orange" style="font-size:12px">환불</div><div><strong style="color:#92400e">환불 신청 학생</strong><span>방어 상담 필요</span></div>${TAG('15명','o')}</div>
+     <div class="work-item" style="border-color:#bfdbfe;background:#eff6ff"><div class="work-icon wi-blue" style="font-size:12px">개강</div><div><strong style="color:#1e40af">개강 지연 학생</strong><span>세팅 확인 필요</span></div>${TAG('18명','b')}</div>`
+  )}
+</div>`,
+
+'a-bonbu':()=>H('수학본부 대시보드','문의, 상담, 이탈, NPS를 본부 단위로 봅니다.')+
+`<div class="grid g4">
+  ${KPI('신규 문의','132','명','green','▲ 8%')}
+  ${KPI('상담률','92','%','blue','▲ 3%')}
+  ${KPI('이탈률','8','%','red','▼ 2%','down')}
+  ${KPI('NPS','78','점','purple','▲ 5점')}
+</div>
+<div class="grid g3" style="margin-top:16px">
+  ${PANEL('신규 문의 추이','<div class="chart-ph">📊 문의 추이 차트</div>')}
+  ${PANEL('연장률 추이','<div class="chart-ph">📈 연장률 추이 차트</div>')}
+  ${PANEL('이탈 사유 분포','<div class="chart-ph">🥧 이탈 사유 도넛 차트</div>')}
+</div>`,
+
+'a-sil':()=>H('실별 현황','각 실의 재원생, 연장률, 이탈률, NPS를 비교합니다.')+
+PANEL('실별 현황',
+  TABLE(
+    ['실명','재원생','연장률','이탈률','환불률','NPS','상태'],
+    [
+      ['강남실','650명','94%','6%','2.1%','82',TAG('우수','g')],
+      ['분당실','550명','90%','8%','2.4%','80',TAG('정상','b')],
+      ['대치실','350명','87%','7%','2.6%','78',TAG('정상','b')],
+      ['목동실','300명','85%','7%','2.8%','76',TAG('관찰','o')],
+      ['송파실','200명','85%','8%','3.0%','74',TAG('관찰','o')],
+    ]
+  )
+)+`<div style="margin-top:16px">${PANEL('실별 KPI 추이','<div class="chart-ph">📈 실별 비교 차트 (연동 예정)</div>')}</div>`,
+
+'a-team':()=>H('팀별 현황','실 내부 팀 단위 성과를 확인합니다.')+
+PANEL('팀별 현황 — 강남실',
+  TABLE(
+    ['팀명','재원생','연장률','이탈률','환불률','NPS','달성률'],
+    [
+      ['중등1팀','120명','96%','5%','2.1%','82',PROG(96,'g')],
+      ['고등1팀','120명','94%','5%','2.4%','80',PROG(94,'g')],
+      ['고등2팀','110명','90%','6%','2.6%','78',PROG(90,'b')],
+      ['고등3팀','130명','93%','7%','2.5%','76',PROG(93,'g')],
+    ]
+  )
+)+`<div style="margin-top:16px">${PANEL('팀별 목표 달성률',BAR('중등1팀',96,'g')+BAR('고등1팀',94,'g')+BAR('고등2팀',90,'b')+BAR('고등3팀',93,'g'))}</div>`,
+
+'a-db':()=>H('전체 학생 DB','전체 학생을 검색하고 상세 정보를 확인합니다.','<button class="btn">CSV 내보내기</button>')+
+`<div class="filters"><input class="search" placeholder="학생명, 연락처 검색"><button class="select">실 선택 ▾</button><button class="select">팀 선택 ▾</button><button class="select">상태 선택 ▾</button></div>`+
+PANEL('학생 DB',
+  TABLE(
+    ['학생명','실 / 팀 / 담당','가입일','최종 상담일','연장 여부','상태'],
+    [
+      ['김민수','강남실 / 중등1팀 / 김선생','2026.01.10','2026.06.08',TAG('연장','g'),TAG('재원','g')],
+      ['이서윤','분당실 / 고등1팀 / 이선생','2026.02.15','2026.06.07',TAG('예정','b'),TAG('재원','b')],
+      ['박지율','대치실 / 고등2팀 / 박선생','2025.11.20','2026.06.07',TAG('도래','o'),TAG('재원','b')],
+      ['최하늘','목동실 / 중등2팀 / 최선생','2026.03.05','2026.06.06',TAG('위험','r'),TAG('관찰','o')],
+      ['정우진','송파실 / 고등3팀 / 정선생','2026.04.01','2026.06.05',TAG('도래','o'),TAG('재원','b')],
+    ]
+  )
+),
+
+'a-teacher':()=>H('선생님 현황','선생님별 핵심 성과와 STT 평균을 확인합니다.')+
+`<section class="panel" style="margin-bottom:16px">
+  <div class="panel-h"><span>선생님 카드</span></div>
+  <div class="panel-b">
+    <div class="people">
+      ${['이선생','박선생','최선생','김선생'].map((n,i)=>`
+        <div class="person">
+          <div class="face">${n[0]}</div>
+          <b style="font-size:14px">${n}</b>
+          <div style="color:var(--sub);font-size:12px;margin-top:3px">${['고등1팀','고등2팀','중등2팀','중등1팀'][i]}</div>
+          <div class="p-metric"><span>연장률</span><b>${[98,95,94,92][i]}%</b></div>
+          <div class="p-metric"><span>환불률</span><b>${[2.1,2.4,2.6,2.8][i]}%</b></div>
+          <div class="p-metric"><span>STT 점수</span><b>${[4.6,4.5,4.3,4.2][i]}</b></div>
+        </div>`).join('')}
+    </div>
+  </div>
+</section>`+
+PANEL('선생님별 상세 목록',
+  TABLE(
+    ['선생님','소속팀','관리 학생수','연장률','환불률','STT 점수','상태'],
+    [
+      ['이선생','고등1팀','48명','98%','2.1%',TAG('4.6점','g'),TAG('우수','g')],
+      ['박선생','고등2팀','45명','95%','2.4%',TAG('4.5점','g'),TAG('우수','g')],
+      ['최선생','중등2팀','52명','94%','2.6%',TAG('4.3점','b'),TAG('정상','b')],
+      ['김선생','중등1팀','55명','92%','2.8%',TAG('4.2점','b'),TAG('정상','b')],
+    ]
+  )
+),
+
+'a-eval':()=>H('평가 분석 (STT 5항목)','상담 품질 평가와 선생님별 평균 점수를 분석합니다.')+
+`<div class="grid g3">
+  ${PANEL('STT 5항목 레이더',`
+    <div class="radar">
+      <svg viewBox="0 0 240 200" width="240" height="200">
+        <polygon points="120,15 215,72 180,172 60,172 25,72" fill="none" stroke="#e5e7eb" stroke-width="1.5"/>
+        <polygon points="120,45 185,88 162,152 78,152 55,88" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+        <polygon points="120,75 155,104 144,132 96,132 85,104" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+        <line x1="120" y1="15" x2="120" y2="172" stroke="#e5e7eb" stroke-width="1"/>
+        <line x1="25" y1="72" x2="215" y2="72" stroke="#e5e7eb" stroke-width="1"/>
+        <line x1="60" y1="172" x2="180" y2="172" stroke="#e5e7eb" stroke-width="1"/>
+        <line x1="25" y1="72" x2="180" y2="172" stroke="#e5e7eb" stroke-width="1"/>
+        <line x1="215" y1="72" x2="60" y2="172" stroke="#e5e7eb" stroke-width="1"/>
+        <polygon points="120,30 200,82 170,162 70,162 40,82" fill="rgba(59,130,246,0.15)" stroke="#3b82f6" stroke-width="2"/>
+        <text x="120" y="9" text-anchor="middle" font-size="10" fill="#6b7280">태도 형성</text>
+        <text x="222" y="76" font-size="10" fill="#6b7280">니즈 파악</text>
+        <text x="184" y="180" font-size="10" fill="#6b7280">학습 판단</text>
+        <text x="30" y="180" font-size="10" fill="#6b7280">솔루션</text>
+        <text x="4" y="76" font-size="10" fill="#6b7280">클로징</text>
+      </svg>
+    </div>
+  `)}
+  ${PANEL('항목별 평균 점수',
+    `<div style="margin-bottom:6px">${BAR('태도 형성',86,'g')}</div>`+
+    `<div style="margin-bottom:6px">${BAR('니즈 파악',82,'b')}</div>`+
+    `<div style="margin-bottom:6px">${BAR('학습 판단',84,'b')}</div>`+
+    `<div style="margin-bottom:6px">${BAR('솔루션 제시',80,'v')}</div>`+
+    `<div style="margin-bottom:6px">${BAR('마무리 클로징',88,'g')}</div>`
+  )}
+  ${PANEL('선생님별 TOP 5',
+    `<div class="rank"><span>이선생</span><div class="hline"><span style="width:96%"></span></div><b>4.6</b></div>
+     <div class="rank"><span>박선생</span><div class="hline"><span style="width:90%"></span></div><b>4.5</b></div>
+     <div class="rank"><span>최선생</span><div class="hline"><span style="width:86%"></span></div><b>4.3</b></div>
+     <div class="rank"><span>김선생</span><div class="hline"><span style="width:84%"></span></div><b>4.2</b></div>
+     <div class="rank"><span>정선생</span><div class="hline"><span style="width:82%"></span></div><b>4.1</b></div>`
+  )}
+</div>`,
+
+'a-perm':()=>H('권한 관리','계정 상태와 접근 권한을 관리합니다.','<button class="btn primary">+ 계정 추가</button>')+
+TABS(['계정 관리','권한 설정'])+
+PANEL('계정 목록',
+  TABLE(
+    ['이름','이메일','역할','소속','상태','최근 접속'],
+    [
+      ['이선생','teacher1@mathontact.com','선생님','강남실 / 중등1팀',TAG('활성','g'),'2026.06.09'],
+      ['박선생','teacher2@mathontact.com','선생님','분당실 / 고등1팀',TAG('활성','g'),'2026.06.08'],
+      ['김팀장','teamlead@mathontact.com','팀장','대치실 / 고등2팀',TAG('활성','g'),'2026.06.09'],
+      ['정재현','admin@mathontact.com','관리자','본부',TAG('활성','g'),'2026.06.09'],
+      ['이퇴사자','former@mathontact.com','선생님','—',TAG('비활성','r'),'2026.04.30'],
+    ]
+  )
+),
+};
+</script>
+</body>
+</html>
