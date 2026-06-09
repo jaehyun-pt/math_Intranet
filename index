@@ -344,7 +344,7 @@ tbody tr:hover td{background:#fafbff}
         </div>
         <div class="rc" id="role-admin" onclick="selectRole('admin')">
           <div class="rc-t">관리자</div>
-          <div class="rc-s">팀장+ · 정재현</div>
+          <div class="rc-s">팀장+ · 이밀당</div>
         </div>
       </div>
       <button class="lb-btn" onclick="login()">로그인</button>
@@ -455,10 +455,10 @@ function login(){
   $('#admin-menu').style.display=admin?'block':'none';
   $('#tn-badge').textContent=admin?'관리자':'선생님';
   $('#tn-badge').classList.toggle('admin',admin);
-  $('#tn-name').textContent=admin?'정재현':'김밀당';
+  $('#tn-name').textContent=admin?'이밀당':'김밀당';
   $('#tn-av').textContent=admin?'정':'김';
   $('#tn-role').textContent=admin?'관리자 · 본부장':'B팀 · 선생님';
-  $('#sb-name').textContent=admin?'정재현':'김밀당';
+  $('#sb-name').textContent=admin?'이밀당':'김밀당';
   $('#sb-role').textContent=admin?'관리자 · 본부장':'선생님 · B팀';
   go(admin?'a-home':'t-home');
 }
@@ -937,7 +937,7 @@ PANEL('계정 목록',
       ['이선생','teacher1@mathontact.com','선생님','강남실 / 중등1팀',TAG('활성','g'),'2026.06.09'],
       ['박선생','teacher2@mathontact.com','선생님','분당실 / 고등1팀',TAG('활성','g'),'2026.06.08'],
       ['김팀장','teamlead@mathontact.com','팀장','대치실 / 고등2팀',TAG('활성','g'),'2026.06.09'],
-      ['정재현','admin@mathontact.com','관리자','본부',TAG('활성','g'),'2026.06.09'],
+      ['이밀당','admin@mathontact.com','관리자','본부',TAG('활성','g'),'2026.06.09'],
       ['이퇴사자','former@mathontact.com','선생님','—',TAG('비활성','r'),'2026.04.30'],
     ]
   )
