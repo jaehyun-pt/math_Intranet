@@ -905,6 +905,7 @@ function login(){
   $('#sb-name').textContent=admin?'정재현':'김밀당';
   $('#sb-role').textContent=admin?'관리자 · 본부장':'선생님 · B팀';
   go(admin?'a-bonbu':'t-home');
+  setTimeout(updateNavBadges,50);
 }
 
 function logout(){location.reload()}
@@ -926,6 +927,29 @@ document.addEventListener('click',e=>{
   if(item&&item.dataset.page)go(item.dataset.page);
   if(e.target.id==='detail-modal')closeModal();
 });
+function updateNavBadges(){
+  const evalPending=dailyEvalData.filter(d=>!d.classEnd).length;
+  const riskCount=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes('이관')).length;
+  const doraeCount=studentDB.filter(s=>s.status.includes('D-')||s.logs.some(l=>l.t.includes('도래'))).length;
+  const badgeMap={'t-process':riskCount,'t-dorae':doraeCount};
+  $$('.nav-item').forEach(item=>{
+    const pg=item.dataset.page;
+    const cnt=badgeMap[pg]||0;
+    const old=item.querySelector('.nb');
+    if(old)old.remove();
+    if(cnt>0){
+      const b=document.createElement('span');
+      b.className='nb';
+      b.textContent=cnt;
+      b.style.cssText='margin-left:auto;min-width:18px;height:18px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;flex-shrink:0';
+      item.appendChild(b);
+    }
+  });
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeModal();const srp=document.getElementById('srp-overlay');if(srp)srp.classList.remove('show');}
+  if(e.key==='/'&&e.target.tagName!=='INPUT'&&e.target.tagName!=='TEXTAREA'){e.preventDefault();const s=document.querySelector('.tn-search');if(s)s.focus();}
+});
 
 // ── helpers ──
 const H=(title,desc,action='')=>`<div class="page-head"><div><h1 class="page-title">${title}</h1><p class="page-desc">${desc}</p></div><div class="actions">${action}</div></div>`;
@@ -933,6 +957,25 @@ const KPI=(l,v,u,cls,trend,dir='up')=>`<div class="kpi ${cls}"><div class="lbl">
 const PANEL=(t,b,right='')=>`<section class="panel"><div class="panel-h"><span>${t}</span><div class="ph-right">${right}</div></div><div class="panel-b">${b}</div></section>`;
 const TAG=(t,c='b')=>`<span class="tag ${c}">${t}</span>`;
 const BAR=(l,w,c='')=>`<div class="bar-row"><span>${l}</span><div class="bar"><div class="fill ${c}" style="width:${w}%"></div></div><b>${w}%</b></div>`;
+function VCHART(title, labels, values, colors, unit='%'){
+  const W=400, H=160, PL=10, PR=10, PT=30, PB=32;
+  const n=labels.length;
+  const barW=Math.floor((W-PL-PR)/n*0.55);
+  const gap=(W-PL-PR)/n;
+  const maxV=100;
+  const yScale=(v)=>PT+(H-PT-PB)*(1-v/maxV);
+  const bars=labels.map((l,i)=>{
+    const v=values[i]||0;
+    const x=PL+i*gap+(gap-barW)/2;
+    const bh=H-PT-PB-yScale(v)+PT;
+    const c=colors[i]||'#3182f6';
+    return `<rect x="${x}" y="${yScale(v)}" width="${barW}" height="${Math.max(bh,2)}" rx="3" fill="${c}" opacity="0.85"/>
+<text x="${x+barW/2}" y="${yScale(v)-5}" text-anchor="middle" font-size="10" font-weight="700" fill="${c}">${v}${unit}</text>
+<text x="${x+barW/2}" y="${H-4}" text-anchor="middle" font-size="9" fill="#9ca3af">${l.replace(/실$/,'').replace(/B2B사업/,'B2B')}</text>`;
+  }).join('');
+  const yLines=[0,20,40,60,80,100].map(v=>`<line x1="${PL}" y1="${yScale(v)}" x2="${W-PR}" y2="${yScale(v)}" stroke="#f3f4f6" stroke-width="1"/>`).join('');
+  return PANEL(title,`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:${H}px">${yLines}${bars}</svg>`);
+}
 const LINE=(labels,values,color='#6366f1',unit='%')=>{
   const W=480,H=120,PL=36,PR=12,PT=12,PB=28;
   const cw=W-PL-PR,ch=H-PT-PB;
@@ -1560,6 +1603,29 @@ function buildTeacherRollup(){
   }).sort((a,b)=>b.rr-a.rr);
 }
 
+// ROOM_STATS_DB → 본부 합산 KPI
+function computeBonbuKPIs(){
+  const rooms=Object.values(ROOM_STATS_DB);
+  const total=rooms.reduce((s,r)=>s+r.total,0);
+  const renewal=rooms.reduce((s,r)=>s+r.renewal,0);
+  const refund=rooms.reduce((s,r)=>s+r.refund,0);
+  const amt=rooms.reduce((s,r)=>s+r.amt,0);
+  const rr=Math.round(renewal/total*100);
+  const rfr=Math.round(refund/total*100);
+  return {total,renewal,refund,amt,rr,rfr};
+}
+// 로그인 역할에 맞는 선생님 데이터 반환
+function getMyTeacherStats(){
+  const T=buildTeacherRollup();
+  const myName=role==='admin'?'정재현':'유민지';
+  return T.find(t=>t.name===myName)||T[0]||{name:'—',room:'—',team:'—',total:0,renewal:0,rr:0,refund:0,rfr:0,amt:0,stt:'0.0'};
+}
+// 실 이름으로 ROOM_STATS_DB 조회
+function getRoomStats(silName){
+  const key=silName.replace(/^\(수학\)/,'');
+  return ROOM_STATS_DB[key]||null;
+}
+
 const studentDB=[
   {id:'s1',name:'김민서',ini:'민',cls:'av-red',grade:'고1',gen:'635기',school:'유성여자고등학교',status:'위험군',sCls:'r',teacher:'박지훈',curr:'고2 내신 집중',schedule:'월화수목 21:30',start:'2026-06-08',phone:'010-9694-9248',pPhone:'010-9458-1413',mId:'minseo635',memo:'기본기 부족, 고난도 문제에서 좌절하고 포기하는 경향이 있어 초반 세심한 케어 필요',salesReq:'꼼꼼한 관리 요청',steps:['done','done','pending','pending','risk','pending','pending'],last:'오늘',logs:[{c:'r',date:'2026.06.09',t:'위험군 컨택 미실행',d:'학부모 유선 컨택 예정'},{c:'',date:'2026.06.08',t:'개강 1일차 수업 완료',d:'개강전 설문 응답 완료'},{c:'g',date:'2026.06.05',t:'진단고사 결과 확인',d:'68점 / 함수 활용 취약'}]},
   {id:'s2',name:'고나원',ini:'나',cls:'av-orange',grade:'중2',gen:'635기',school:'중산중학교',status:'개강예정',sCls:'b',teacher:'박지훈',curr:'공통수학1',schedule:'월화수목 18:00',start:'2026-06-15',phone:'010-9749-5228',pPhone:'010-5550-5228',mId:'nawon635',memo:'루틴 관리와 반복 학습 요청, 개강 전 설문 미응답 상태로 확인 필요',salesReq:'고등수업 과정 희망',steps:['pending','pending','pending','pending','pending','pending','pending'],last:'어제',logs:[{c:'',date:'2026.06.08',t:'개강 전 설문 발송',d:'미응답 상태 확인 필요'},{c:'b',date:'2026.06.05',t:'진단고사 일정 안내',d:'6월 15일 예정'}]},
@@ -1803,6 +1869,23 @@ function todoAdd(){
   document.getElementById('todo-deadline').value='';
 }
 // #10 Dorae calculator
+function generateReport(){
+  const student=document.getElementById('rg-student')?.value||'전체 학생';
+  const type=document.getElementById('rg-type')?.value||'개강 초기 리포트';
+  const date=document.getElementById('rg-date')?.value||'2026-06-12';
+  const name=student||'전체 학생';
+  const templates={
+    '개강 초기 리포트':`안녕하세요, ${name} 학부모님.\n\n개강 초기 리포트를 전달드립니다.\n\n✔ 진단고사 결과: 취약 단원 2개 확인 (함수, 통계)\n✔ 수업 참여도: 적극적, 질문 빈도 높음\n✔ 1주차 학습 계획: 개념 정리 → 기본 유형 반복\n\n앞으로도 성실히 지도하겠습니다. 궁금하신 점은 언제든지 연락 주세요.`,
+    '위험군 분석 리포트':`안녕하세요, ${name} 학부모님.\n\n${date} 기준 위험군 분석 리포트입니다.\n\n⚠ 위험 요인: 고난도 문제 포기 반응, 복습 누락\n⚠ 누적 위험 점수: 11점 (위험군 기준 초과)\n✔ 대응 방안: 담당 선생님 추가 컨택, 학습 루틴 재설정\n\n빠른 시일 내 상담 일정을 잡겠습니다.`,
+    '환불 방어 리포트':`안녕하세요, ${name} 학부모님.\n\n수강 지속 관련 안내 드립니다.\n\n✔ 현재까지 진행 성과: 진단 완료, 취약 단원 개선 중\n✔ 앞으로의 계획: 3주차부터 응용 유형 집중 트레이닝\n✔ 담당 선생님 추가 컨택: ${date} 예정\n\n궁금하신 부분은 편하게 연락 주세요.`,
+    '첫주 계획 공유 리포트':`안녕하세요, ${name} 학부모님.\n\n첫 주 학습 계획을 공유드립니다.\n\n📌 1일차: 진단고사 분석 및 취약 단원 파악\n📌 2~3일차: 개념 정리 (함수·방정식)\n📌 4~5일차: 기본 유형 문제 반복\n📌 주말: 오답 정리 및 자기 점검\n\n꾸준한 참여 부탁드립니다!`,
+  };
+  const body=templates[type]||'리포트 내용을 불러올 수 없습니다.';
+  const out=document.getElementById('rg-output');
+  document.getElementById('rg-title').textContent=`[${type}] ${name} · ${date}`;
+  document.getElementById('rg-body').textContent=body;
+  if(out) out.style.display='block';
+}
 function calcDorae(){
   const goal = parseInt(document.getElementById('calc-goal')?.value)||0;
   const curr = parseInt(document.getElementById('calc-curr')?.value)||0;
@@ -2213,10 +2296,26 @@ const TREND_DB = {
 };
 function renderBonbuTrendsInline(key, period){
   const d = (TREND_DB[key]||TREND_DB.bonbu)[period]||TREND_DB[key]?.monthly||TREND_DB.bonbu.monthly;
-  const rr = LINE(d.labels, d.rerenew, '#22c55e');
-  const ex = LINE(d.labels, d.extend,  '#6366f1');
-  const rf = LINE(d.labels, d.refund,  '#f97316');
-  return PANEL('재수강률 추이',rr)+PANEL('연장률 추이',ex)+PANEL('신규전액환불률 추이',rf);
+  const labels = d.labels;
+  const W=560, H=200, PL=36, PR=12, PT=30, PB=28;
+  const minV=0, maxV=100, step=20;
+  const xStep=(W-PL-PR)/(labels.length-1);
+  const yScale=(v)=>PT+(H-PT-PB)*(1-(v-minV)/(maxV-minV));
+  const makePath=(vals,color)=>{
+    const pts=vals.map((v,i)=>`${PL+i*xStep},${yScale(v)}`).join(' L ');
+    return `<path d="M ${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>`;
+  };
+  const makeDots=(vals,color)=>vals.map((v,i)=>`<circle cx="${PL+i*xStep}" cy="${yScale(v)}" r="3.5" fill="${color}"/>`).join('');
+  const makeLabels=(vals,color)=>vals.map((v,i)=>`<text x="${PL+i*xStep}" y="${yScale(v)-8}" text-anchor="middle" font-size="10" font-weight="700" fill="${color}">${v}</text>`).join('');
+  const xLabels=labels.map((l,i)=>`<text x="${PL+i*xStep}" y="${H-4}" text-anchor="middle" font-size="10" fill="#9ca3af">${l}</text>`).join('');
+  const yTicks=[0,20,40,60,80,100].map(v=>`<text x="${PL-4}" y="${yScale(v)+4}" text-anchor="end" font-size="9" fill="#d1d5db">${v}</text><line x1="${PL}" y1="${yScale(v)}" x2="${W-PR}" y2="${yScale(v)}" stroke="#f3f4f6" stroke-width="1"/>`).join('');
+  const legend=`<g transform="translate(${PL},10)">
+    <rect x="0" y="0" width="8" height="8" rx="2" fill="#22c55e"/><text x="11" y="8" font-size="10" fill="#4b5563">재수강률</text>
+    <rect x="62" y="0" width="8" height="8" rx="2" fill="#6366f1"/><text x="73" y="8" font-size="10" fill="#4b5563">연장률</text>
+    <rect x="114" y="0" width="8" height="8" rx="2" fill="#f97316"/><text x="125" y="8" font-size="10" fill="#4b5563">신규전액환불률</text>
+  </g>`;
+  const svg=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:${H}px">${yTicks}${makePath(d.rerenew,'#22c55e')}${makePath(d.extend,'#6366f1')}${makePath(d.refund,'#f97316')}${makeDots(d.rerenew,'#22c55e')}${makeDots(d.extend,'#6366f1')}${makeDots(d.refund,'#f97316')}${makeLabels(d.rerenew,'#22c55e')}${makeLabels(d.extend,'#6366f1')}${makeLabels(d.refund,'#f97316')}${xLabels}${legend}</svg>`;
+  return PANEL('KPI 추이',svg);
 }
 function renderBonbuTrends(period){
   const key = document.getElementById('bonbu-scope')?.value || 'bonbu';
@@ -2316,106 +2415,122 @@ function refreshTrend(trendKey, period, container){
 
 // ── 프로세스 페이지 빌더 (실/팀 공통) ──
 function buildOpeningProcessAdmin(scopeName){
+  scopeName=scopeName||'전체';
   const steps=[
-    {label:'개강전설문',pct:91},
-    {label:'진단고사',pct:84},
-    {label:'개강후설문',pct:76},
-    {label:'1일차공유',pct:88},
-    {label:'위험군컨택',pct:62},
-    {label:'1주차계획',pct:79},
-    {label:'환불방어',pct:95},
+    {label:'개강전설문',pct:91},{label:'진단고사',pct:84},{label:'개강후설문',pct:76},
+    {label:'1일차공유',pct:88},{label:'위험군컨택',pct:62},{label:'1주차계획',pct:79},{label:'환불방어',pct:95},
   ];
-  const stepBar=`<div style="display:flex;gap:0;margin-bottom:16px;border:1px solid var(--line);border-radius:10px;overflow:hidden">
+  const avg=Math.round(steps.reduce((a,s)=>a+s.pct,0)/steps.length);
+  const stepBar=`<div style="display:flex;gap:0;margin-bottom:12px;border:1px solid var(--line);border-radius:10px;overflow:hidden">
     ${steps.map((s,i)=>{const c=s.pct>=90?'var(--green)':s.pct>=75?'var(--orange)':'var(--red)';return `<div style="flex:1;padding:10px 8px;border-right:${i<steps.length-1?'1px solid var(--line)':'0'};text-align:center">
       <div style="font-size:10px;font-weight:900;color:var(--sub);margin-bottom:4px;white-space:nowrap">${s.label}</div>
       <div style="font-size:16px;font-weight:950;color:${c}">${s.pct}%</div>
     </div>`;}).join('')}
   </div>`;
-  const avg=Math.round(steps.reduce((a,s)=>a+s.pct,0)/steps.length);
-  return stepBar+`<div class="grid g4" style="margin-bottom:16px">
+  const topKpis=`<div class="grid g4" style="margin-bottom:16px">
     ${KPI('전체 달성률',avg,'%','blue',scopeName+' 기준')}
     ${KPI('개강전설문',steps[0].pct,'%','green','▲ 3% 전주 대비')}
     ${KPI('위험군컨택',steps[4].pct,'%','red','주의 필요','down')}
     ${KPI('환불방어',steps[6].pct,'%','purple','목표 달성')}
-  </div>
-  <div class="grid g2">
-    ${PANEL('액션별 수행률',
-      steps.map(s=>BAR(s.label,s.pct,s.pct>=90?'g':s.pct>=75?'b':'o')).join('')
-    )}
-    ${PANEL('미완료 주요 현황',
-      TABLE(['액션','미완료 건수','구분','처리기한'],[
-        ['개강후설문','위험군컨택 미실행 8건',TAG('지연','r'),TAG('오늘','r')],
-        ['위험군컨택','컨택 미완료 12건',TAG('긴급','r'),TAG('오늘','r')],
-        ['1주차계획','미작성 7건',TAG('지연','o'),TAG('금주 내','o')],
-        ['개강후설문','미회수 5건',TAG('미완','o'),TAG('금주 내','o')],
-      ])
-    )}
   </div>`;
+  const teachers=buildTeacherRollup().slice(0,6);
+  const tLabels=teachers.map(t=>t.name);
+  const tVals=teachers.map(t=>Math.floor(60+t.rr*0.3+Math.random()*10));
+  const midSection=`<div class="grid g2" style="margin-bottom:16px">
+    ${VCHART('팀원별 개강프로세스 수행률 (%)',tLabels,tVals,tVals.map(v=>v>=85?'#10b981':v>=70?'#f59e0b':'#ef4444'))}
+    ${PANEL('미완료 주요 현황',TABLE(['액션','미완료 건수','구분','처리기한'],[
+      ['위험군컨택',TAG('12건','r'),TAG('긴급','r'),TAG('오늘','r')],
+      ['개강후설문',TAG('8건','o'),TAG('지연','o'),TAG('금주 내','o')],
+      ['1주차계획',TAG('7건','o'),TAG('미완','o'),TAG('금주 내','o')],
+      ['진단고사',TAG('3건','b'),TAG('진행','b'),TAG('이번달','b')],
+    ]))}
+  </div>`;
+  const actionCols=['개강전설문','진단고사','개강후설문','1일차공유','위험군컨택'];
+  const studentRows=studentDB.slice(0,8).map(s=>{
+    const cells=actionCols.map(()=>Math.random()>0.35?TAG('완료','g'):TAG('미완','r'));
+    return [s.name,TAG(s.grade,'n'),s.status,...cells];
+  });
+  const bottomSection=PANEL('학생별 개강프로세스 기록',TABLE(['학생','학년','상태',...actionCols],studentRows));
+  return `<section class="panel" style="margin-bottom:16px"><div class="panel-h"><span>전반적인 액션 수행률</span>${TAG(scopeName,'b')}</div><div class="panel-b">${stepBar}${topKpis}</div></section>`+midSection+bottomSection;
 }
 function buildDoraeProcessAdmin(scopeName){
-  const steps=[{label:'01. 홈/KPI',pct:100},{label:'02. 목록 관리',pct:89},{label:'03. 상담 관리',pct:76},{label:'04. 재결제/반응',pct:93},{label:'05. 완료 현황',pct:70}];
-  const stepBar=`<div style="display:flex;gap:0;margin-bottom:16px;border:1px solid var(--line);border-radius:10px;overflow:hidden">
-    ${steps.map((s,i)=>{const c=s.pct>=90?'var(--green)':s.pct>=80?'var(--orange)':'var(--red)';return `<div style="flex:1;padding:10px 12px;border-right:${i<steps.length-1?'1px solid var(--line)':'0'};background:${i===0?'var(--blue2)':'#fff'}">
+  scopeName=scopeName||'전체';
+  const rooms=Object.keys(ROOM_STATS_DB);
+  const isRoom=rooms.includes(scopeName);
+  const labels=isRoom?[scopeName]:rooms;
+  const steps=[{label:'목록 관리',pct:89},{label:'상담 관리',pct:76},{label:'재결제/반응',pct:93},{label:'완료 현황',pct:70}];
+  const avg=Math.round(steps.reduce((a,s)=>a+s.pct,0)/steps.length);
+  const stepBar=`<div style="display:flex;gap:0;margin-bottom:12px;border:1px solid var(--line);border-radius:10px;overflow:hidden">
+    ${steps.map((s,i)=>{const c=s.pct>=90?'var(--green)':s.pct>=80?'var(--orange)':'var(--red)';return `<div style="flex:1;padding:10px 12px;border-right:${i<steps.length-1?'1px solid var(--line)':'0'};text-align:center">
       <div style="font-size:10px;font-weight:900;color:var(--sub);margin-bottom:4px">${s.label}</div>
       <div style="font-size:16px;font-weight:950;color:${c}">${s.pct}%</div>
     </div>`;}).join('')}
   </div>`;
-  return stepBar+`<div class="grid g5" style="margin-bottom:16px">
-    ${KPI('관리 대상','2,156','명','blue',scopeName+' 기준')}
-    ${KPI('동율 현황률','95','%','green','▲ 2% 전월')}
+  const topKpis=`<div class="grid g4" style="margin-bottom:16px">
+    ${KPI('전체 달성률',avg,'%','blue',scopeName+' 기준')}
     ${KPI('상담 진행률','93','%','purple','정상 범위')}
     ${KPI('재결제 진행률','76','%','orange','▼ 1% 전월','down')}
     ${KPI('완료율','70','%','red','목표 75% 미달','down')}
-  </div>
-  <div class="grid g2">
-    ${PANEL('완료율 추이', BAR('3월',62,'b')+BAR('4월',65,'b')+BAR('5월',67,'b')+BAR('6월',70,'b'))}
-    ${PANEL('이탈 학생 현황',
-      TABLE(['이탈 유형','인원','비율'],[
-        [TAG('불만 이탈','r'),'49명','34%'],
-        [TAG('도달 이탈','o'),'38명','27%'],
-        [TAG('상담 거절','o'),'34명','24%'],
-        [TAG('기타','i'),'21명','15%'],
-      ])
-    )}
   </div>`;
+  const compVals=labels.map((_,i)=>Math.floor(65+i*3+Math.random()*10));
+  const midSection=`<div class="grid g2" style="margin-bottom:16px">
+    ${VCHART('실별 도래프로세스 수행률 (%)',labels,compVals,compVals.map(v=>v>=85?'#10b981':v>=70?'#f59e0b':'#ef4444'))}
+    ${PANEL('미완료 주요 현황',TABLE(['항목','미완료 건수','구분','처리기한'],[
+      ['상담 관리',TAG('14건','r'),TAG('긴급','r'),TAG('오늘','r')],
+      ['재결제 반응',TAG('9건','o'),TAG('지연','o'),TAG('금주 내','o')],
+      ['완료 확인',TAG('6건','b'),TAG('진행','b'),TAG('이번달','b')],
+    ]))}
+  </div>`;
+  const actionCols=['목록관리','상담관리','재결제반응','완료확인'];
+  const studentRows=studentDB.filter(s=>s.logs&&s.logs.some(l=>l.includes('도래'))).slice(0,6).map(s=>{
+    const cells=actionCols.map(()=>Math.random()>0.3?TAG('완료','g'):TAG('미완','r'));
+    return [s.name,TAG(s.grade,'n'),s.status,...cells];
+  }).concat(studentDB.slice(0,4).map(s=>{
+    const cells=actionCols.map(()=>Math.random()>0.4?TAG('완료','g'):TAG('미완','r'));
+    return [s.name,TAG(s.grade,'n'),s.status,...cells];
+  })).slice(0,6);
+  const bottomSection=PANEL('학생별 도래프로세스 기록',TABLE(['학생','학년','상태',...actionCols],studentRows));
+  return `<section class="panel" style="margin-bottom:16px"><div class="panel-h"><span>전반적인 도래프로세스 수행률</span>${TAG(scopeName,'b')}</div><div class="panel-b">${stepBar}${topKpis}</div></section>`+midSection+bottomSection;
 }
 function buildSpecialProcessAdmin(scopeName){
-  const steps=[{label:'01. 특강 기여',pct:100},{label:'02. 투입/참여',pct:91},{label:'03. 신입/참여',pct:83},{label:'04. 특강 관리',pct:92},{label:'05. 결과 분석',pct:60}];
-  const stepBar=`<div style="display:flex;gap:0;margin-bottom:16px;border:1px solid var(--line);border-radius:10px;overflow:hidden">
-    ${steps.map((s,i)=>{const c=s.pct>=90?'var(--green)':s.pct>=80?'var(--orange)':'var(--red)';return `<div style="flex:1;padding:10px 12px;border-right:${i<steps.length-1?'1px solid var(--line)':'0'};background:${i===0?'var(--blue2)':'#fff'}">
+  scopeName=scopeName||'전체';
+  const rooms=Object.keys(ROOM_STATS_DB);
+  const isRoom=rooms.includes(scopeName);
+  const labels=isRoom?[scopeName]:rooms;
+  const steps=[{label:'대상 선정',pct:95},{label:'사전 안내',pct:88},{label:'수강 확인',pct:79},{label:'후기 수집',pct:65}];
+  const avg=Math.round(steps.reduce((a,s)=>a+s.pct,0)/steps.length);
+  const stepBar=`<div style="display:flex;gap:0;margin-bottom:12px;border:1px solid var(--line);border-radius:10px;overflow:hidden">
+    ${steps.map((s,i)=>{const c=s.pct>=90?'var(--green)':s.pct>=80?'var(--orange)':'var(--red)';return `<div style="flex:1;padding:10px 12px;border-right:${i<steps.length-1?'1px solid var(--line)':'0'};text-align:center">
       <div style="font-size:10px;font-weight:900;color:var(--sub);margin-bottom:4px">${s.label}</div>
       <div style="font-size:16px;font-weight:950;color:${c}">${s.pct}%</div>
     </div>`;}).join('')}
   </div>`;
-  return stepBar+`<div class="grid g5" style="margin-bottom:16px">
-    ${KPI('전체 특강 수','24','개','blue',scopeName+' 기준')}
-    ${KPI('신입 특강 수','1,248','명','green','▲ 5.3% 전분기')}
-    ${KPI('참여율','83','%','purple','▲ 2.1% 전분기')}
-    ${KPI('만족도','4.6','점','orange','▲ 0.2점')}
-    ${KPI('재참여율','78','%','red','목표 80% 근접','neutral')}
-  </div>
-  <div class="grid g2">
-    ${PANEL('특강별 진행 현황',
-      TABLE(['특강명','신입 인원','참여율','만족도','상태'],[
-        ['정규반 특강',TAG('중고2사내 특강','i'),'320명','85%','4.7',TAG('진행중','b')],
-        ['중고2사내 특강',TAG('중고2사내 특강','i'),'280명','84%','4.5',TAG('진행중','b')],
-        ['수학 방산 입문 특강',TAG('수방','v'),'220명','82%','4.6',TAG('진행중','b')],
-        ['기상고사 사내 특강',TAG('기사','o'),'180명','73%','4.4',TAG('준비중','o')],
-      ])
-    )}
-    ${PANEL('특강 참여자 분포',
-      TABLE(['구분','인원','비율'],[
-        [TAG('23 신규생','b'),'492명','39%'],
-        [TAG('22 재학생','g'),'412명','33%'],
-        [TAG('21 재학생','v'),'344명','28%'],
-      ])
-    )}
+  const topKpis=`<div class="grid g4" style="margin-bottom:16px">
+    ${KPI('전체 달성률',avg,'%','blue',scopeName+' 기준')}
+    ${KPI('사전 안내율',steps[1].pct,'%','green','')}
+    ${KPI('수강 확인율',steps[2].pct,'%','orange','')}
+    ${KPI('후기 수집률',steps[3].pct,'%','purple','목표 80%','down')}
   </div>`;
+  const compVals=labels.map((_,i)=>Math.floor(72+i*2+Math.random()*8));
+  const midSection=`<div class="grid g2" style="margin-bottom:16px">
+    ${VCHART('실별 특강프로세스 수행률 (%)',labels,compVals,compVals.map(v=>v>=85?'#10b981':v>=72?'#f59e0b':'#ef4444'))}
+    ${PANEL('미완료 주요 현황',TABLE(['항목','미완료 건수','구분','처리기한'],[
+      ['후기 수집',TAG('10건','r'),TAG('긴급','r'),TAG('금주 내','r')],
+      ['수강 확인',TAG('6건','o'),TAG('지연','o'),TAG('이번달','o')],
+    ]))}
+  </div>`;
+  const actionCols=['대상선정','사전안내','수강확인','후기수집'];
+  const studentRows=studentDB.slice(0,6).map(s=>{
+    const cells=actionCols.map(()=>Math.random()>0.3?TAG('완료','g'):TAG('미완','r'));
+    return [s.name,TAG(s.grade,'n'),s.status,...cells];
+  });
+  const bottomSection=PANEL('학생별 특강프로세스 기록',TABLE(['학생','학년','상태',...actionCols],studentRows));
+  return `<section class="panel" style="margin-bottom:16px"><div class="panel-h"><span>전반적인 특강프로세스 수행률</span>${TAG(scopeName,'b')}</div><div class="panel-b">${stepBar}${topKpis}</div></section>`+midSection+bottomSection;
 }
 
 // ── 실별/팀별 탭 상태 ──
-let silState={tab:'dashboard',sil:'전체',period:'monthly',queryMode:'주차',queryYear:'26',queryMonth:'6',queryWeek:'1',queryStart:'',queryEnd:''};
-let teamState={tab:'dashboard',sil:'(수학)초등실',team:'전체',period:'monthly'};
+let silState={tab:'dashboard',sil:'전체',period:'monthly',queryMode:'주차',queryYear:'26',queryMonth:'6',queryWeek:'1',queryStart:'',queryEnd:'',processScope:'전체'};
+let teamState={tab:'dashboard',sil:'(수학)초등실',team:'전체',period:'monthly',processScope:'전체'};
 
 function goSilTab(tab){ silState.tab=tab; go('a-sil'); }
 function setSilSil(sil){ silState.sil=sil; go('a-sil'); }
@@ -2458,30 +2573,28 @@ function buildSilQueryUI(){
 
 function buildSilDashboardNew(){
   const rooms=Object.keys(ROOM_STATS_DB);
-  // Bar chart section
-  let barHtml='<div class="grid g2" style="margin-bottom:16px">';
-  barHtml+=`<section class="panel"><div class="panel-h"><span style="font-weight:900">PT 수</span></div><div class="panel-b" style="padding:12px">`;
-  rooms.forEach(r=>{ const d=ROOM_STATS_DB[r]; barHtml+=BAR(r,Math.round(d.total/3.7),'b'); });
-  barHtml+=`</div></section>`;
-  barHtml+=`<section class="panel"><div class="panel-h"><span style="font-weight:900">재수강률</span></div><div class="panel-b" style="padding:12px">`;
-  rooms.forEach(r=>{ const d=ROOM_STATS_DB[r]; barHtml+=BAR(r,d.rr,d.rr>=76?'g':d.rr>=70?'b':'o'); });
-  barHtml+=`</div></section>`;
-  barHtml+=`<section class="panel"><div class="panel-h"><span style="font-weight:900">신규전액환불률</span></div><div class="panel-b" style="padding:12px">`;
-  rooms.forEach(r=>{ const d=ROOM_STATS_DB[r]; barHtml+=BAR(r,d.rfr,d.rfr<=9?'g':d.rfr<=12?'o':'r'); });
-  barHtml+=`</div></section>`;
-  barHtml+=`<section class="panel"><div class="panel-h"><span style="font-weight:900">이탈률</span></div><div class="panel-b" style="padding:12px">`;
-  rooms.forEach(r=>{ const d=ROOM_STATS_DB[r]; const churn=Math.round(((d.total-d.renewal)/d.total)*100); barHtml+=BAR(r,churn,churn<=20?'g':churn<=28?'o':'r'); });
-  barHtml+=`</div></section>`;
-  barHtml+='</div>';
-  // Accordion drilldown (multiple expand)
+  const labels=rooms.map(r=>r);
+  const colorFn=(vals,good,warn)=>vals.map(v=>v>=good?'#10b981':v>=warn?'#f59e0b':'#ef4444');
+  const rrVals=rooms.map(r=>ROOM_STATS_DB[r].rr);
+  const rfrVals=rooms.map(r=>ROOM_STATS_DB[r].rfr);
+  const churnVals=rooms.map(r=>Math.round(((ROOM_STATS_DB[r].total-ROOM_STATS_DB[r].renewal)/ROOM_STATS_DB[r].total)*100));
+  const ptVals=rooms.map(r=>Math.round(ROOM_STATS_DB[r].total/3.7));
+  const chartGrid=`<div class="grid g2" style="margin-bottom:16px">
+    ${VCHART('재수강률 (%)',labels,rrVals,colorFn(rrVals,76,70))}
+    ${VCHART('신규전액환불률 (%)',labels,rfrVals,colorFn(rfrVals.map(v=>-v),-9,-12).map((c,i)=>rfrVals[i]<=9?'#10b981':rfrVals[i]<=12?'#f59e0b':'#ef4444'))}
+    ${VCHART('이탈률 (%)',labels,churnVals,churnVals.map(v=>v<=20?'#10b981':v<=28?'#f59e0b':'#ef4444'))}
+    ${VCHART('PT 수 (상대)',labels,ptVals,ptVals.map(()=>'#3182f6'),'명')}
+  </div>`;
+  // Accordion drilldown
   let accHtml='<section class="panel" style="margin-bottom:16px"><div class="panel-h"><span style="font-weight:900">실별 상세 드릴다운</span><span style="font-size:12px;color:var(--sub)">실 클릭 → 팀 확인 → 팀 클릭 → 선생님 상세</span></div><div class="panel-b" style="padding:12px">';
-  rooms.forEach(room=>{
+  Object.keys(ROOM_STATS_DB).forEach(room=>{
     const d=ROOM_STATS_DB[room];
     accHtml+='<div class="accordion-room"><div class="accordion-head" onclick="silToggleRoom(\''+room+'\')">'+
       '<span>'+room+'</span>'+
       '<span style="display:flex;gap:8px;align-items:center;font-size:12px;font-weight:700">'+
       '<span style="color:var(--sub)">'+d.total+'명</span>'+
       '<span class="tag b">재수강률 '+d.rr+'%</span>'+
+      '<span class="tag '+(d.rfr<=9?'g':d.rfr<=12?'o':'r')+'">환불률 '+d.rfr+'%</span>'+
       '<span style="color:var(--sub)">▼</span></span></div>'+
       '<div class="accordion-body" id="acc-'+room+'">';
     const teamsInRoom=TEAM_STATS_DB[room]||{};
@@ -2490,87 +2603,112 @@ function buildSilDashboardNew(){
       accHtml+='<div class="team-drill-row" onclick="silDrillTeam(\''+room+'\',\''+team+'\',this)">'+
         '<strong style="font-size:13px">'+team+'</strong>'+
         '<span class="tag n" style="font-size:10px">'+td2.total+'명</span>'+
-        '<span style="font-size:12px;color:var(--sub)">재수강률 '+td2.rr+'% · 환불 '+td2.refund+'건</span>'+
+        '<span style="font-size:12px;color:var(--sub)">재수강률 '+td2.rr+'% · 환불률 '+td2.rfr+'%</span>'+
         '<span style="margin-left:auto;font-size:11px;color:var(--blue)">▶ 선생님 보기</span></div>'+
         '<div class="team-detail-pane" id="tdp-'+room+'-'+team+'"></div>';
     });
     accHtml+='</div></div>';
   });
   accHtml+='</div></section>';
-  // Raw DB
   const rawHtml='<section class="panel"><div class="panel-h"><span style="font-weight:900">Raw DB</span><button class="btn" style="min-height:28px;font-size:11px" onclick="downloadCSV()">CSV 다운로드</button></div><div class="panel-b" style="padding:12px"><div id="sil-rawdb-table">'+buildSilRawTable()+'</div></div></section>';
-  return barHtml+accHtml+rawHtml;
+  return chartGrid+accHtml+rawHtml;
 }
 
-function buildSilOpeningProcess(){
+function buildSilOpeningProcess(scope){
+  scope=scope||'전체';
   const rooms=Object.keys(ROOM_STATS_DB);
+  const scopeKeys=scope==='전체'?rooms:[scope];
+  const labels=scopeKeys;
   const metrics=[
-    {key:'전체액션수행률',vals:{고등1실:88,고등2실:82,중등1실:76,중등2실:91,초등실:85,B2B사업실:79}},
-    {key:'개강전설문',vals:{고등1실:93,고등2실:87,중등1실:80,중등2실:95,초등실:90,B2B사업실:83}},
-    {key:'위험군컨택',vals:{고등1실:72,고등2실:65,중등1실:58,중등2실:78,초등실:70,B2B사업실:62}},
-    {key:'환불방어',vals:{고등1실:95,고등2실:91,중등1실:88,중등2실:97,초등실:94,B2B사업실:86}},
+    {key:'전체수행률',vals:{고등1실:88,고등2실:82,중등1실:76,중등2실:91,초등실:85,B2B사업실:79},good:88,warn:75},
+    {key:'개강전설문',vals:{고등1실:93,고등2실:87,중등1실:80,중등2실:95,초등실:90,B2B사업실:83},good:90,warn:80},
+    {key:'위험군컨택',vals:{고등1실:72,고등2실:65,중등1실:58,중등2실:78,초등실:70,B2B사업실:62},good:75,warn:60},
+    {key:'환불방어',vals:{고등1실:95,고등2실:91,중등1실:88,중등2실:97,초등실:94,B2B사업실:86},good:90,warn:80},
   ];
-  let barHtml='<div class="grid g2" style="margin-bottom:16px">';
-  metrics.forEach(m=>{
-    barHtml+=`<section class="panel"><div class="panel-h"><span style="font-weight:900">${m.key}</span></div><div class="panel-b" style="padding:12px">`;
-    rooms.forEach(r=>{ const v=m.vals[r]||70; barHtml+=BAR(r,v,v>=88?'g':v>=75?'b':'o'); });
-    barHtml+=`</div></section>`;
+  const steps=[
+    {label:'개강전설문',pct:91},{label:'진단고사',pct:84},{label:'개강후설문',pct:76},
+    {label:'1일차공유',pct:88},{label:'위험군컨택',pct:62},{label:'1주차계획',pct:79},{label:'환불방어',pct:95},
+  ];
+  const avg=Math.round(steps.reduce((a,s)=>a+s.pct,0)/steps.length);
+  // Top: 전반적 수행률
+  const stepBar=`<div style="display:flex;gap:0;margin-bottom:12px;border:1px solid var(--line);border-radius:10px;overflow:hidden">
+    ${steps.map((s,i)=>{const c=s.pct>=90?'var(--green)':s.pct>=75?'var(--orange)':'var(--red)';return `<div style="flex:1;padding:10px 8px;border-right:${i<steps.length-1?'1px solid var(--line)':'0'};text-align:center">
+      <div style="font-size:10px;font-weight:900;color:var(--sub);margin-bottom:4px;white-space:nowrap">${s.label}</div>
+      <div style="font-size:16px;font-weight:950;color:${c}">${s.pct}%</div>
+    </div>`;}).join('')}
+  </div>`;
+  const topKpis=`<div class="grid g4" style="margin-bottom:16px">
+    ${KPI('전체 달성률',avg,'%','blue',scope+' 기준')}
+    ${KPI('개강전설문',steps[0].pct,'%','green','▲ 3% 전주 대비')}
+    ${KPI('위험군컨택',steps[4].pct,'%','red','주의 필요','down')}
+    ${KPI('환불방어',steps[6].pct,'%','purple','목표 달성')}
+  </div>`;
+  // Middle: 실별/팀원별 수행률 + 미완료
+  const midVals=labels.map(r=>metrics[0].vals[r]||75);
+  const midColors=midVals.map(v=>v>=88?'#10b981':v>=75?'#f59e0b':'#ef4444');
+  const midSection=`<div class="grid g2" style="margin-bottom:16px">
+    ${VCHART('실별 전체수행률 (%)',labels,midVals,midColors)}
+    ${PANEL('미완료 주요 현황',TABLE(['액션','미완료 건수','구분','처리기한'],[
+      ['위험군컨택',TAG('12건','r'),TAG('긴급','r'),TAG('오늘','r')],
+      ['개강후설문',TAG('8건','o'),TAG('지연','o'),TAG('금주 내','o')],
+      ['1주차계획',TAG('7건','o'),TAG('미완','o'),TAG('금주 내','o')],
+      ['진단고사',TAG('3건','b'),TAG('진행','b'),TAG('이번달','b')],
+    ]))}
+  </div>`;
+  // Bottom: 학생별 기록
+  const actionCols=['개강전설문','진단고사','개강후설문','1일차공유','위험군컨택'];
+  const studentRows=studentDB.slice(0,8).map(s=>{
+    const cells=actionCols.map(()=>Math.random()>0.35?TAG('완료','g'):TAG('미완','r'));
+    return [s.name,TAG(s.grade,'n'),s.status,...cells];
   });
-  barHtml+='</div>';
-  // Accordion - team completion
-  let accHtml='<section class="panel" style="margin-bottom:16px"><div class="panel-h"><span style="font-weight:900">팀별 미완료 현황</span></div><div class="panel-b" style="padding:12px">';
-  rooms.forEach(room=>{
-    const d=ROOM_STATS_DB[room];
-    accHtml+='<div class="accordion-room"><div class="accordion-head" onclick="silToggleRoom(\'op-'+room+'\')">'+
-      '<span>'+room+'</span>'+
-      '<span style="font-size:12px;color:var(--sub);font-weight:700">미완료 팀 확인 ▼</span></div>'+
-      '<div class="accordion-body" id="acc-op-'+room+'">';
-    const teamsInRoom=TEAM_STATS_DB[room]||{};
-    Object.entries(teamsInRoom).forEach(([team])=>{
-      const pct=Math.floor(Math.random()*30+60);
-      accHtml+='<div style="display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid #f3f4f6">'+
-        '<strong style="min-width:100px;font-size:13px">'+team+'</strong>'+
-        BAR('',pct,pct>=80?'g':pct>=65?'b':'o')+
-      '</div>';
-    });
-    accHtml+='</div></div>';
-  });
-  accHtml+='</div></section>';
-  // Raw DB - opening process columns
-  const rawRows=RAW_ROWS_DB.slice(0,8);
-  let rawHtml='<section class="panel"><div class="panel-h"><span style="font-weight:900">Raw DB - 개강 프로세스</span></div><div class="panel-b" style="padding:12px"><div class="table-wrap"><table style="width:100%;font-size:12px"><thead><tr>';
-  ['실','팀','팀원명','학생명','개강전설문','진단고사','개강후설문','1일차공유','위험군컨택','1주차계획','환불방어'].forEach(h=>{ rawHtml+='<th>'+h+'</th>'; });
-  rawHtml+='</tr></thead><tbody>';
-  rawRows.forEach(row=>{
-    rawHtml+='<tr><td>'+row.sil+'</td><td>'+row.team+'</td><td>'+row.teacher+'</td><td>'+row.student+'</td>';
-    ['개강전설문','진단고사','개강후설문','1일차공유','위험군컨택','1주차계획','환불방어'].forEach(()=>{
-      const done=Math.random()>0.3;
-      rawHtml+='<td><span class="tag '+(done?'g':'r')+'">'+(done?'완료':'미완')+'</span></td>';
-    });
-    rawHtml+='</tr>';
-  });
-  rawHtml+='</tbody></table></div></div></section>';
-  return barHtml+accHtml+rawHtml;
+  const bottomSection=PANEL('학생별 개강프로세스 기록',TABLE(['학생','학년','상태',...actionCols],studentRows));
+  return `<section class="panel" style="margin-bottom:16px"><div class="panel-h"><span>전반적인 액션 수행률</span>${TAG(scope,'b')}</div><div class="panel-b">${stepBar}${topKpis}</div></section>`+midSection+bottomSection;
 }
-
-function buildSilNaeshinProcess(){
+function buildSilNaeshinProcess(scope){
+  scope=scope||'전체';
   const rooms=Object.keys(ROOM_STATS_DB);
-  let barHtml='<div class="grid g2" style="margin-bottom:16px">';
-  [
-    {key:'내신대비 참여율',vals:{고등1실:88,고등2실:91,중등1실:76,중등2실:83,초등실:70,B2B사업실:65}},
-    {key:'시험지 제출률',vals:{고등1실:82,고등2실:85,중등1실:79,중등2실:88,초등실:74,B2B사업실:71}},
-  ].forEach(m=>{
-    barHtml+=`<section class="panel"><div class="panel-h"><span style="font-weight:900">${m.key}</span></div><div class="panel-b" style="padding:12px">`;
-    rooms.forEach(r=>{ const v=m.vals[r]||70; barHtml+=BAR(r,v,v>=85?'g':v>=75?'b':'o'); });
-    barHtml+=`</div></section>`;
+  const scopeKeys=scope==='전체'?rooms:[scope];
+  const labels=scopeKeys;
+  const participationVals={고등1실:88,고등2실:91,중등1실:76,중등2실:83,초등실:70,B2B사업실:65};
+  const submitVals={고등1실:82,고등2실:85,중등1실:79,중등2실:88,초등실:74,B2B사업실:71};
+  const pVals=labels.map(r=>participationVals[r]||70);
+  const sVals=labels.map(r=>submitVals[r]||70);
+  const steps=[{label:'범위확인',pct:95},{label:'기출분석',pct:83},{label:'계획수립',pct:76},{label:'시험응시',pct:98},{label:'오답정리',pct:71},{label:'리포트발송',pct:68}];
+  const avg=Math.round(steps.reduce((a,s)=>a+s.pct,0)/steps.length);
+  const stepBar=`<div style="display:flex;gap:0;margin-bottom:12px;border:1px solid var(--line);border-radius:10px;overflow:hidden">
+    ${steps.map((s,i)=>{const c=s.pct>=90?'var(--green)':s.pct>=75?'var(--orange)':'var(--red)';return `<div style="flex:1;padding:10px 8px;border-right:${i<steps.length-1?'1px solid var(--line)':'0'};text-align:center">
+      <div style="font-size:10px;font-weight:900;color:var(--sub);margin-bottom:4px;white-space:nowrap">${s.label}</div>
+      <div style="font-size:16px;font-weight:950;color:${c}">${s.pct}%</div>
+    </div>`;}).join('')}
+  </div>`;
+  const topKpis=`<div class="grid g4" style="margin-bottom:16px">
+    ${KPI('전체 달성률',avg,'%','blue',scope+' 기준')}
+    ${KPI('참여율',pVals[0],'%','green','')}
+    ${KPI('시험지 제출률',sVals[0],'%','orange','')}
+    ${KPI('리포트 발송',steps[5].pct,'%','purple','목표 80%','down')}
+  </div>`;
+  const midSection=`<div class="grid g2" style="margin-bottom:16px">
+    ${VCHART('내신대비 참여율 (%)',labels,pVals,pVals.map(v=>v>=85?'#10b981':v>=75?'#f59e0b':'#ef4444'))}
+    ${PANEL('미완료 주요 현황',TABLE(['항목','미완료 건수','구분','처리기한'],[
+      ['리포트 발송',TAG('12건','r'),TAG('긴급','r'),TAG('금주 내','r')],
+      ['오답 정리',TAG('8건','o'),TAG('지연','o'),TAG('이번달','o')],
+      ['기출 분석',TAG('5건','b'),TAG('진행','b'),TAG('다음주','b')],
+    ]))}
+  </div>`;
+  const actionCols=['범위확인','기출분석','계획수립','시험응시','오답정리','리포트발송'];
+  const studentRows=studentDB.slice(0,6).map(s=>{
+    const cells=actionCols.map(()=>Math.random()>0.3?TAG('완료','g'):TAG('미완','r'));
+    return [s.name,TAG(s.grade,'n'),s.status,...cells];
   });
-  barHtml+='</div>';
-  return barHtml+`<section class="panel"><div class="panel-h"><span style="font-weight:900">내신 현황 요약</span></div><div class="panel-b" style="padding:12px">${TABLE(['실','대상 학생','시험 등록','시험지 첨부','평균 점수'],rooms.map(r=>{const d=ROOM_STATS_DB[r];return [r,d.total+'명',Math.round(d.total*0.7)+'명',Math.round(d.total*0.55)+'명',(Math.random()*20+70).toFixed(1)+'점'];}))}  </div></section>`;
+  const bottomSection=PANEL('학생별 내신프로세스 기록',TABLE(['학생','학년','상태',...actionCols],studentRows));
+  return `<section class="panel" style="margin-bottom:16px"><div class="panel-h"><span>전반적인 액션 수행률</span>${TAG(scope,'b')}</div><div class="panel-b">${stepBar}${topKpis}</div></section>`+midSection+bottomSection;
 }
 function goTeamTab(tab){ teamState.tab=tab; go('a-team'); }
 function setTeamSil(sil){ teamState.sil=sil; teamState.team='전체'; go('a-team'); }
 function setTeamTeam(team){ teamState.team=team; go('a-team'); }
 function setTeamPeriod(p){ teamState.period=p; go('a-team'); }
+function setSilProcessScope(s){ silState.processScope=s; go('a-sil'); }
+function setTeamProcessScope(s){ teamState.processScope=s; go('a-team'); }
 
 function buildSilDashboard(sil, period){
   if(sil==='전체'){
@@ -2582,11 +2720,43 @@ function buildSilDashboard(sil, period){
 }
 
 function buildTeamDashboard(sil, team, period){
-  const teams=SIL_TEAMS[sil]||[];
   const tData=TEAM_METRICS[sil]||{};
+  const teamNames=SIL_TEAMS[sil]||[];
   if(team==='전체'){
-    const rows=teams.map(t=>{const m=tData[t]||{pt:'-',rerenew:'-',extend:'-',refund:'-',churn:'-'};const ec=(m.extend||0)>=94?'g':(m.extend||0)>=90?'b':'o';return [t,m.pt+'명',m.rerenew+'%',m.extend+'%',m.refund+'%',m.churn+'%',TAG((m.extend||0)>=94?'우수':(m.extend||0)>=90?'정상':'관찰',ec)];});
-    return PANEL(sil+' 팀별 현황 비교',TABLE(['팀명','PT 수','재수강률','연장률','신규전액환불률','이탈률','상태'],rows));
+    const labels=teamNames;
+    const rrVals=teamNames.map(t=>(tData[t]||{rerenew:70}).rerenew);
+    const rfrVals=teamNames.map(t=>(tData[t]||{refund:2.5}).refund);
+    const exVals=teamNames.map(t=>(tData[t]||{extend:88}).extend);
+    const churnVals=teamNames.map(t=>(tData[t]||{churn:7}).churn);
+    const chartGrid=`<div class="grid g2" style="margin-bottom:16px">
+      ${VCHART('재수강률 (%)',labels,rrVals,rrVals.map(v=>v>=76?'#10b981':v>=72?'#f59e0b':'#ef4444'))}
+      ${VCHART('연장률 (%)',labels,exVals,exVals.map(v=>v>=93?'#10b981':v>=88?'#f59e0b':'#ef4444'))}
+      ${VCHART('신규전액환불률 (%)',labels,rfrVals,rfrVals.map(v=>v<=2?'#10b981':v<=3?'#f59e0b':'#ef4444'),'%')}
+      ${VCHART('이탈률 (%)',labels,churnVals,churnVals.map(v=>v<=5?'#10b981':v<=7?'#f59e0b':'#ef4444'))}
+    </div>`;
+    // Drilldown accordion
+    let accHtml='<section class="panel" style="margin-bottom:16px"><div class="panel-h"><span style="font-weight:900">팀별 상세 드릴다운</span></div><div class="panel-b" style="padding:12px">';
+    teamNames.forEach(tName=>{
+      const m=tData[tName]||{pt:8,rerenew:74,extend:91,refund:2.2,churn:6};
+      const teachers=Object.entries(TEAM_STATS_DB[sil]?.[tName]||{});
+      accHtml+='<div class="accordion-room"><div class="accordion-head" onclick="silToggleRoom(\'tm-'+tName+'\')">'+
+        '<span>'+tName+'</span>'+
+        '<span style="display:flex;gap:8px;align-items:center;font-size:12px;font-weight:700">'+
+        '<span class="tag b">재수강률 '+m.rerenew+'%</span>'+
+        '<span class="tag '+(m.refund<=2?'g':m.refund<=3?'o':'r')+'">환불률 '+m.refund+'%</span>'+
+        '<span style="color:var(--sub)">▼</span></span></div>'+
+        '<div class="accordion-body" id="acc-tm-'+tName+'">';
+      teachers.forEach(([teacher,d])=>{
+        accHtml+='<div style="display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid #f3f4f6">'+
+          '<strong style="min-width:80px;font-size:13px">'+teacher+'</strong>'+
+          '<span class="tag n">'+d.total+'명</span>'+
+          '<span style="font-size:12px;color:var(--sub)">재수강률 '+d.rr+'% · 환불률 '+d.rfr+'%</span></div>';
+      });
+      if(!teachers.length) accHtml+='<div style="padding:8px 4px;font-size:12px;color:var(--sub)">팀원 데이터 없음</div>';
+      accHtml+='</div></div>';
+    });
+    accHtml+='</div></section>';
+    return chartGrid+accHtml;
   }
   const m=(tData[team])||{pt:10,rerenew:74,extend:90,refund:2.3,churn:7.0};
   return buildKpiRow(m)+buildTrendRow(sil+'_'+team, period);
@@ -2706,17 +2876,19 @@ function previewImages(input,targetId){
 // ── pages ──
 const pages={
 
-'t-home':()=>H('To-Do List','오늘 처리해야 할 상담, 액션, 미완료 프로세스를 한 화면에서 확인합니다.')+
-`<div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-bottom:12px">
+'t-home':()=>H('To-Do List',(()=>{const d=new Date();const days=['일','월','화','수','목','금','토'];return d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+days[d.getDay()]+')'+'  ·  오늘 처리해야 할 상담·액션·미완료 프로세스를 한눈에 확인합니다.';})())+
+`<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px">
+  <button class="filter-chip on" onclick="go('t-eval')"><iconify-icon icon="solar:clipboard-text-linear" style="font-size:13px;margin-right:3px"></iconify-icon>일일평가</button>
+  <button class="filter-chip" onclick="go('t-process')"><iconify-icon icon="solar:list-check-linear" style="font-size:13px;margin-right:3px"></iconify-icon>개강 프로세스</button>
+  <button class="filter-chip" onclick="go('t-dorae')"><iconify-icon icon="solar:clock-circle-linear" style="font-size:13px;margin-right:3px"></iconify-icon>도래자 프로세스</button>
+  <button class="filter-chip" onclick="go('t-students')"><iconify-icon icon="solar:users-group-two-rounded-linear" style="font-size:13px;margin-right:3px"></iconify-icon>학생 관리</button>
+  <button class="filter-chip" onclick="go('t-naeshin')"><iconify-icon icon="solar:book-2-linear" style="font-size:13px;margin-right:3px"></iconify-icon>내신 프로세스</button>
+</div>
+<div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-bottom:12px">
   <span style="font-size:12px;color:var(--sub)" id="report-status-text"></span>
   <button class="btn primary" style="min-height:34px" onclick="submitCompletionReport()">업무 완료 보고</button>
 </div>
-<div class="grid g4" style="margin-bottom:16px">
-  ${KPI('오늘 업무','3','건','blue','개강 프로세스 오늘 마감')}
-  ${KPI('주간 업무','4','건','green','금요일 마감')}
-  ${KPI('명령지 미수','3','명','orange','이번 주 처리 필요','down')}
-  ${KPI('완료 대기 승인','2','건','purple','팀장 최종 승인 필요','down')}
-</div>
+${(()=>{const rc=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes('이관')).length;const pc=studentDB.filter(s=>!s.steps.includes('risk')&&!s.status.includes('이관')&&s.steps.some(x=>x==='pending')).length+1;const cmd=studentDB.filter(s=>s.status.includes('재원')&&s.steps.filter(x=>x==='pending').length>=3).length+1;const appr=studentDB.filter(s=>s.status.includes('재원')&&s.steps.filter(x=>x==='pending').length>=3).length;return '<div class="grid g4" style="margin-bottom:16px">'+KPI('오늘 업무',rc,'건','blue',rc>0?'위험군·이관 긴급 처리':'업무 없음')+KPI('주간 업무',pc,'건','green','이번 주 마감')+KPI('명령지 미수',cmd,'명','orange','처리 필요','down')+KPI('완료 대기 승인',appr,'건','purple','팀장 승인 필요','down')+'</div>';})()}
 <div class="grid g2" style="gap:16px;align-items:start;margin-bottom:16px">
   <section class="panel">
     <div class="panel-h">
@@ -2864,9 +3036,9 @@ const pages={
   </div>
 </section>`,
 
-'t-my':()=>H('KPI','개인 KPI와 본부 목표 대비 현황을 확인합니다.')+
+'t-my':()=>{const _m=getMyTeacherStats();const _bk=computeBonbuKPIs();const _myRR=_m.rr;const _myRFR=_m.rfr;const _myName=_m.name;const _myRoom=_m.room;const _myTeam=_m.team;const _myTotal=_m.total;const _mySTT=_m.stt;const _rrGoal=85;const _rfGoal=10;const _rrProg=Math.min(Math.round(_myRR/_rrGoal*100),110);const _rfProg=Math.min(Math.round(_rfGoal/_myRFR*100),110);return H('KPI','개인 KPI와 본부 목표 대비 현황을 확인합니다. (TEAM DB 기반 실시간 데이터)')+
 `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-  <div class="kpi-layer-label" style="margin:0">개인 지표 — 박지훈</div>
+  <div class="kpi-layer-label" style="margin:0">개인 지표 — ${_myName}</div>
   <div class="period-tabs">
     <button class="period-tab on" onclick="kpiPeriod(this,'weekly')">주간</button>
     <button class="period-tab" onclick="kpiPeriod(this,'monthly')">월간</button>
@@ -2876,51 +3048,52 @@ const pages={
 <div class="grid g4" style="margin-bottom:16px">
   <div class="kpi blue">
     <div class="kpi-hl"><div class="lbl">연장률 <span class="kpi-fi">?<span class="ft">연장률 = 연장 결제 수 ÷ 도래 학생 수 × 100</span></span></div></div>
-    <div class="val">84<span class="unit">%</span></div>
-    <div class="trend down">목표 85% · ▼ 1%</div>
+    <div class="val">${_myRR}<span class="unit">%</span></div>
+    <div class="trend ${_myRR>=_rrGoal?'up':'down'}">목표 ${_rrGoal}% · ${_myRR>=_rrGoal?'▲ +':' ▼ '}${Math.abs(_myRR-_rrGoal)}%</div>
   </div>
   <div class="kpi green">
-    <div class="kpi-hl"><div class="lbl">이탈률 <span class="kpi-fi">?<span class="ft">이탈률 = 퇴원 학생 수 ÷ 전체 담당 학생 수 × 100</span></span></div></div>
-    <div class="val">6.8<span class="unit">%</span></div>
-    <div class="trend up">목표 8% 이하 달성</div>
+    <div class="kpi-hl"><div class="lbl">관리 학생수 <span class="kpi-fi">?<span class="ft">담당 팀의 총 학생 수 (TEAM DB 기준)</span></span></div></div>
+    <div class="val">${_myTotal}<span class="unit">명</span></div>
+    <div class="trend up">재원 중 · ${_myRoom}</div>
   </div>
   <div class="kpi purple">
-    <div class="kpi-hl"><div class="lbl">신규전액환불률 <span class="kpi-fi">?<span class="ft">신규전액환불률 = 개강 후 7일 내 전액 환불 수 ÷ 전체 신규 등록 수 × 100</span></span></div></div>
-    <div class="val">3.2<span class="unit">%</span></div>
-    <div class="trend up">목표 4% 이하 달성</div>
+    <div class="kpi-hl"><div class="lbl">환불률 <span class="kpi-fi">?<span class="ft">환불률 = 환불 건수 ÷ 전체 담당 학생 수 × 100</span></span></div></div>
+    <div class="val">${_myRFR}<span class="unit">%</span></div>
+    <div class="trend ${_myRFR<=_rfGoal?'up':'down'}">목표 ${_rfGoal}% 이하 ${_myRFR<=_rfGoal?'달성':'초과'}</div>
   </div>
   <div class="kpi orange">
-    <div class="kpi-hl"><div class="lbl">액션 수행률 <span class="kpi-fi">?<span class="ft">액션 수행률 = 완료 액션 수 ÷ 전체 할당 액션 수 × 100</span></span></div></div>
-    <div class="val">91<span class="unit">%</span></div>
-    <div class="trend up">목표 90% · ▲ 1%</div>
+    <div class="kpi-hl"><div class="lbl">STT 점수 <span class="kpi-fi">?<span class="ft">STT = 4.0 + (연장률-70) ÷ 30 공식 기반 자동 산출</span></span></div></div>
+    <div class="val">${_mySTT}<span class="unit">점</span></div>
+    <div class="trend up">목표 4.0 이상 달성</div>
   </div>
 </div>
-<div class="kpi-layer-label">팀 지표 — 고등1A팀</div>
+<div class="kpi-layer-label">실 지표 — ${_myRoom}</div>
 <div class="grid g4" style="margin-bottom:16px">
-  <div class="kpi"><div class="lbl">연장률 <span class="kpi-fi">?<span class="ft">연장률 = 연장 결제 수 ÷ 도래 학생 수 × 100</span></span></div><div class="val" style="color:#374151">82<span class="unit">%</span></div><div class="trend neutral">팀 평균</div></div>
-  <div class="kpi"><div class="lbl">이탈률</div><div class="val" style="color:#374151">7.4<span class="unit">%</span></div><div class="trend neutral">팀 평균</div></div>
-  <div class="kpi"><div class="lbl">신규전액환불률</div><div class="val" style="color:#374151">3.8<span class="unit">%</span></div><div class="trend neutral">팀 평균</div></div>
-  <div class="kpi"><div class="lbl">액션 수행률</div><div class="val" style="color:#374151">88<span class="unit">%</span></div><div class="trend neutral">팀 평균</div></div>
+  ${(()=>{const rd=ROOM_STATS_DB[_myRoom]||ROOM_STATS_DB['고등1실'];return `
+  <div class="kpi"><div class="lbl">실 연장률</div><div class="val" style="color:#374151">${rd.rr}<span class="unit">%</span></div><div class="trend neutral">실 평균 (ROOM DB)</div></div>
+  <div class="kpi"><div class="lbl">실 PT 수</div><div class="val" style="color:#374151">${rd.total}<span class="unit">명</span></div><div class="trend neutral">실 전체 학생</div></div>
+  <div class="kpi"><div class="lbl">실 환불률</div><div class="val" style="color:#374151">${rd.rfr}<span class="unit">%</span></div><div class="trend neutral">실 평균</div></div>
+  <div class="kpi"><div class="lbl">실 매출</div><div class="val" style="color:#374151">${(rd.amt/10000000).toFixed(0)}<span class="unit">천만원</span></div><div class="trend neutral">실 합산</div></div>`;})()}
 </div>
-<div class="kpi-layer-label">본부 목표</div>
+<div class="kpi-layer-label">본부 목표 대비</div>
 <section class="panel" style="margin-bottom:16px">
-  <div class="panel-h"><span>목표 대비 현황</span>${TAG('2026년 6월 기준','n')}</div>
+  <div class="panel-h"><span>목표 대비 현황</span>${TAG('TEAM DB 기반','b')}</div>
   <div class="panel-b">
     ${TABLE(
-      ['지표','개인 목표','현재','팀 평균','달성률','상태'],
+      ['지표','개인 목표','현재 (DB)','본부 평균','달성률','상태'],
       [
-        ['연장률','85%','84%','82%',PROG(99,'o')+'&nbsp;99%',TAG('근접','o')],
-        ['이탈률','8% 이하','6.8%','7.4%',PROG(100,'g')+'&nbsp;양호',TAG('달성','g')],
-        ['신규전액환불률','4% 이하','3.2%','3.8%',PROG(100,'g')+'&nbsp;양호',TAG('달성','g')],
-        ['액션 수행률','90%','91%','88%',PROG(101,'g')+'&nbsp;101%',TAG('초과','g')],
+        ['연장률',_rrGoal+'%',_myRR+'%',_bk.rr+'%',PROG(_rrProg,_rrProg>=100?'g':'o')+'&nbsp;'+_rrProg+'%',TAG(_myRR>=_rrGoal?'달성':'근접',_myRR>=_rrGoal?'g':'o')],
+        ['환불률',_rfGoal+'% 이하',_myRFR+'%',_bk.rfr+'%',PROG(_rfProg,_rfProg>=100?'g':'o')+'&nbsp;'+(_myRFR<=_rfGoal?'양호':'초과'),TAG(_myRFR<=_rfGoal?'달성':'초과',_myRFR<=_rfGoal?'g':'r')],
+        ['관리 학생수','—',_myTotal+'명',Math.round(_bk.total/buildTeacherRollup().length)+'명(평균)',PROG(Math.min(Math.round(_myTotal/Math.round(_bk.total/buildTeacherRollup().length)*100),110),'b')+'&nbsp;—',TAG('정상','b')],
+        ['STT 점수','4.0 이상',_mySTT+'점',((buildTeacherRollup().reduce((s,t)=>s+parseFloat(t.stt),0)/buildTeacherRollup().length).toFixed(1))+'점',PROG(Math.min(Math.round(parseFloat(_mySTT)/4.5*100),110),'g')+'&nbsp;—',TAG(parseFloat(_mySTT)>=4.0?'달성':'근접',parseFloat(_mySTT)>=4.0?'g':'o')],
       ]
     )}
   </div>
 </section>
 <div class="grid g2">
-  ${PANEL('월 누적 추이', LINE(['1월','2월','3월','4월','5월','6월'],[79,81,83,82,84,84],'#3b82f6','%'))}
-  ${PANEL('분기 비교', LINE(['Q1 24','Q2 24','Q3 24','Q4 24','Q1 25','Q2 25'],[79,81,80,83,82,84],'#8b5cf6','%'))}
-</div>`,
+  ${PANEL('연장률 월 누적 추이', LINE(['1월','2월','3월','4월','5월','6월'],[_myRR-5,_myRR-3,_myRR-2,_myRR-3,_myRR-1,_myRR],'#3182f6','%'))}
+  ${PANEL('환불률 추이', LINE(['Q1 24','Q2 24','Q3 24','Q4 24','Q1 25','Q2 25'],[_myRFR+3,_myRFR+2,_myRFR+2,_myRFR+1,_myRFR+1,_myRFR],'#8b5cf6','%'))}
+</div>`},
 
 't-students-record':()=>H('학적 관리','개강생 확인 및 세팅, 학생 이관, 명령지 처리를 한 화면에서 관리합니다.')+
 `<div id="sr-main-pane">
@@ -3250,8 +3423,7 @@ const pages={
           <div class="ats-dh-meta" id="ats-dh-meta"><span>${studentDB[0].grade} · ${studentDB[0].gen}</span><span>${studentDB[0].school}</span></div>
         </div>
         <div class="ats-dh-actions">
-          <button class="btn">상담 기록 추가</button>
-          <button class="btn primary">개강 프로세스</button>
+          <button class="btn primary">상담 기록 추가</button>
         </div>
       </div>
     </div>
@@ -3390,7 +3562,42 @@ const pages={
       </div>
     </aside>
   </div>
-</section>`,
+</section>
+${PANEL('리포트 생성기',`
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:flex-end;margin-bottom:14px">
+  <div>
+    <div style="font-size:11px;font-weight:700;color:var(--sub);margin-bottom:5px">학생 선택</div>
+    <select class="select" id="rg-student" style="width:100%">
+      <option value="">전체 학생</option>
+      <option>김민서</option><option>고나원</option><option>최서연</option>
+    </select>
+  </div>
+  <div>
+    <div style="font-size:11px;font-weight:700;color:var(--sub);margin-bottom:5px">리포트 유형</div>
+    <select class="select" id="rg-type" style="width:100%">
+      <option>개강 초기 리포트</option>
+      <option>위험군 분석 리포트</option>
+      <option>환불 방어 리포트</option>
+      <option>첫주 계획 공유 리포트</option>
+    </select>
+  </div>
+  <div>
+    <div style="font-size:11px;font-weight:700;color:var(--sub);margin-bottom:5px">기준일</div>
+    <input type="date" class="select" id="rg-date" value="2026-06-12" style="width:100%">
+  </div>
+  <button class="btn primary" onclick="generateReport()" style="white-space:nowrap">리포트 생성</button>
+</div>
+<div id="rg-output" style="display:none;border-radius:10px;background:#f8fafc;border:1px solid #e5e7eb;padding:16px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <strong id="rg-title" style="font-size:14px"></strong>
+    <div style="display:flex;gap:6px">
+      <button class="btn" onclick="document.getElementById('rg-output').style.display='none'">닫기</button>
+      <button class="btn primary" onclick="alert('리포트가 학부모에게 발송되었습니다.')">발송</button>
+    </div>
+  </div>
+  <div id="rg-body" style="font-size:13px;line-height:1.7;color:#374151;white-space:pre-line"></div>
+</div>
+`)}`,
 
 't-dorae':()=>H('도래자 프로세스','도래 시점별 상담과 후속 액션을 관리합니다.')+
 `<div class="calc-widget">
@@ -3484,18 +3691,12 @@ PANEL('학생별 액션 아카이브',
 </div>`,
 
 // ── ADMIN PAGES ──
-'a-bonbu':()=>H('수학본부 대시보드','본부 핵심 KPI와 신규PT 개강 트래킹을 한 화면에서 확인합니다.')+
-`<div class="drill-level-tabs">
-  <button class="drill-level-tab on" onclick="adminDrillTab(this,'bonbu')">수학온택트본부</button>
-  ${SIL_LIST.slice(0,4).map(s=>`<button class="drill-level-tab" onclick="adminDrillTab(this,'sil','${s}')">${s}</button>`).join('')}
-</div>
-<div class="drill-pane on" id="drill-bonbu">
-<div class="grid g5" style="margin-bottom:16px">
-  ${KPI('PT 수','2,350','명','blue','▲ 12명 전월 대비')}
-  ${KPI('재수강률','74','%','green','▲ 2.1% 전월 대비')}
-  ${KPI('연장률','91','%','purple','목표 92% ▼ 1%','down')}
-  ${KPI('신규전액환불률','3.1','%','orange','목표 4% 이하 달성')}
-  ${KPI('이탈률','6.8','%','red','목표 8% 이하 달성','neutral')}
+'a-bonbu':()=>{const _bk=computeBonbuKPIs();const _avgEx=Math.round(Object.values(SIL_METRICS).reduce((s,r)=>s+r.extend,0)/Object.values(SIL_METRICS).length);const _avgRfr=Math.round(Object.values(SIL_METRICS).reduce((s,r)=>s+r.refund*10,0)/Object.values(SIL_METRICS).length)/10;return H('수학본부 대시보드','본부 핵심 KPI와 신규PT 개강 트래킹을 한 화면에서 확인합니다. (ROOM DB 기반 실시간 집계)')+
+`<div class="grid g4" style="margin-bottom:16px">
+  ${KPI('전체 PT 수',_bk.total.toLocaleString(),'명','blue','ROOM DB 6개 실 합산')}
+  ${KPI('재수강률',_bk.rr,'%','green','가중 평균 · 목표 75%',_bk.rr>=75?'up':'down')}
+  ${KPI('연장률',_avgEx,'%','purple','실 평균 · 목표 90%',_avgEx>=90?'up':'down')}
+  ${KPI('신규전액환불률',_avgRfr,'%','orange','목표 3% 이하',_avgRfr<=3?'up':'down')}
 </div>
 <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
   <span style="font-size:12px;font-weight:900;color:var(--sub)">기간 선택</span>
@@ -3505,7 +3706,7 @@ PANEL('학생별 액션 아카이브',
     <option value="quarterly">분기별</option>
   </select>
 </div>
-<div class="grid g3" id="bonbu-trends" style="margin-bottom:16px">
+<div id="bonbu-trends" style="margin-bottom:16px">
   ${renderBonbuTrendsInline('bonbu','monthly')}
 </div>
 <section class="panel">
@@ -3528,11 +3729,7 @@ PANEL('학생별 액션 아카이브',
     <div class="ptcal-grid" id="ptcal-body" style="margin-top:4px"></div>
   </div>
 </section>
-</div>
-<div class="drill-pane" id="drill-sil">
-  <div style="padding:8px 0 12px;font-size:12px;color:var(--sub)">실을 선택하면 팀별 상세 데이터가 표시됩니다.</div>
-  ${TABLE(['실','PT 수','재수강률','연장률','환불률','이탈률'],SIL_LIST.map(s=>[`<span class="drill-bc-item" onclick="adminDrillTab(document.querySelector('.drill-level-tab.on'),'team','${s}')" style="color:var(--blue);cursor:pointer;font-weight:900">${s}</span>`,'280명','73%','84%','3.1%','6.8%']))}
-</div>`,
+`},
 
 'a-sil':()=>{
   const s=silState;
@@ -3541,28 +3738,31 @@ PANEL('학생별 액션 아카이브',
   const queryUI=buildSilQueryUI();
   let content='';
   if(s.tab==='dashboard') content=buildSilDashboardNew();
-  else if(s.tab==='opening') content=buildSilOpeningProcess();
-  else if(s.tab==='dorae') content=buildDoraeProcessAdmin('전체 실');
-  else if(s.tab==='naeshin') content=buildSilNaeshinProcess();
-  else if(s.tab==='special') content=buildSpecialProcessAdmin('전체 실');
-  return H('실별 현황','실 단위 KPI와 프로세스 현황을 확인합니다.')+tabBar+queryUI+content;
+  else if(s.tab==='opening') content=buildSilOpeningProcess(s.processScope||'전체');
+  else if(s.tab==='dorae') content=buildDoraeProcessAdmin(s.processScope||'전체');
+  else if(s.tab==='naeshin') content=buildSilNaeshinProcess(s.processScope||'전체');
+  else if(s.tab==='special') content=buildSpecialProcessAdmin(s.processScope||'전체');
+  const processScopeBtns = s.tab!=='dashboard' ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+    ${['전체',...Object.keys(ROOM_STATS_DB)].map(r=>`<button class="btn${(s.processScope||'전체')===r?' primary':''}" style="min-height:28px;font-size:12px" onclick="setSilProcessScope('${r}')">${r}</button>`).join('')}
+  </div>` : '';
+  return H('실별 현황','실 단위 KPI와 프로세스 현황을 확인합니다.')+tabBar+(s.tab==='dashboard'?queryUI:'')+processScopeBtns+content;
 },
 
 'a-team':()=>{
   const s=teamState;
-  const tabDefs=[['대시보드','dashboard'],['개강프로세스','opening'],['도래프로세스','dorae'],['특강프로세스','special']];
+  const tabDefs=[['대시보드','dashboard'],['개강프로세스','opening'],['도래프로세스','dorae'],['내신프로세스','naeshin'],['특강프로세스','special']];
   const tabBar=`<div class="tabs" style="margin-bottom:14px">${tabDefs.map(([label,key])=>`<div class="tab ${s.tab===key?'on':''}" onclick="goTeamTab('${key}')">${label}</div>`).join('')}</div>`;
   const teams=SIL_TEAMS[s.sil]||[];
-  const scopeSel=`<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+  const scopeSel=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding:12px 16px;background:#f9fafb;border:1px solid var(--line);border-radius:10px">
     <span style="font-size:12px;font-weight:900;color:var(--sub)">실 선택</span>
     <select class="select" onchange="setTeamSil(this.value)">
       ${SIL_LIST.map(x=>`<option value="${x}"${s.sil===x?' selected':''}>${x}</option>`).join('')}
     </select>
-    <span style="font-size:12px;font-weight:900;color:var(--sub)">팀 선택</span>
+    ${s.tab==='dashboard'?`<span style="font-size:12px;font-weight:900;color:var(--sub)">팀 선택</span>
     <select class="select" onchange="setTeamTeam(this.value)">
       <option value="전체"${s.team==='전체'?' selected':''}>전체 팀 비교</option>
       ${teams.map(t=>`<option value="${t}"${s.team===t?' selected':''}>${t}</option>`).join('')}
-    </select>
+    </select>`:''}
     ${s.tab==='dashboard'&&s.team!=='전체'?`<span style="font-size:12px;font-weight:900;color:var(--sub)">기간 선택</span>
     <select class="select" onchange="setTeamPeriod(this.value)">
       <option value="monthly"${s.period==='monthly'?' selected':''}>월별</option>
@@ -3570,13 +3770,17 @@ PANEL('학생별 액션 아카이브',
       <option value="quarterly"${s.period==='quarterly'?' selected':''}>분기별</option>
     </select>`:''}
   </div>`;
+  const processScopeBtns = s.tab!=='dashboard' ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+    ${['전체',...teams].map(t=>`<button class="btn${(s.processScope||'전체')===t?' primary':''}" style="min-height:28px;font-size:12px" onclick="setTeamProcessScope('${t}')">${t}</button>`).join('')}
+  </div>` : '';
   let content='';
-  const scopeName=(s.team==='전체'?s.sil:s.sil+' '+s.team);
+  const scope=s.processScope||'전체';
   if(s.tab==='dashboard') content=buildTeamDashboard(s.sil,s.team,s.period);
-  else if(s.tab==='opening') content=buildOpeningProcessAdmin(scopeName);
-  else if(s.tab==='dorae')   content=buildDoraeProcessAdmin(scopeName);
-  else if(s.tab==='special') content=buildSpecialProcessAdmin(scopeName);
-  return H('팀별 현황','팀 단위 KPI와 프로세스 현황을 확인합니다.')+tabBar+scopeSel+content;
+  else if(s.tab==='opening') content=buildOpeningProcessAdmin(scope==='전체'?s.sil+' 전체':scope);
+  else if(s.tab==='dorae')   content=buildDoraeProcessAdmin(scope==='전체'?s.sil+' 전체':scope);
+  else if(s.tab==='naeshin') content=buildSilNaeshinProcess(scope==='전체'?'전체':scope);
+  else if(s.tab==='special') content=buildSpecialProcessAdmin(scope==='전체'?s.sil+' 전체':scope);
+  return H('팀별 현황','팀 단위 KPI와 프로세스 현황을 확인합니다.')+tabBar+scopeSel+processScopeBtns+content;
 },
 
 'a-db':()=>{
@@ -3646,19 +3850,15 @@ PANEL('학생별 액션 아카이브',
     `<div style="margin-bottom:6px">${BAR('솔루션 제시',80,'v')}</div>`+
     `<div style="margin-bottom:6px">${BAR('마무리 클로징',88,'g')}</div>`
   )}
-  ${PANEL('선생님별 TOP 5',
-    `<div class="rank"><span>이선생</span><div class="hline"><span style="width:96%"></span></div><b>4.6</b></div>
-     <div class="rank"><span>박선생</span><div class="hline"><span style="width:90%"></span></div><b>4.5</b></div>
-     <div class="rank"><span>최선생</span><div class="hline"><span style="width:86%"></span></div><b>4.3</b></div>
-     <div class="rank"><span>김선생</span><div class="hline"><span style="width:84%"></span></div><b>4.2</b></div>
-     <div class="rank"><span>정선생</span><div class="hline"><span style="width:82%"></span></div><b>4.1</b></div>`
+  ${PANEL('선생님별 STT 랭킹',
+    (()=>{const T=buildTeacherRollup().slice(0,6);const maxStt=Math.max(...T.map(t=>parseFloat(t.stt)));return T.map(t=>{const sttF=parseFloat(t.stt);const w=Math.round(sttF/maxStt*100);const cls=sttF>=4.2?'g':sttF>=3.8?'b':'o';return `<div class="rank"><span style="font-weight:700">${t.name}<small style="color:var(--sub);font-weight:400;margin-left:4px">${t.room}</small></span><div class="hline"><span style="width:${w}%;background:${sttF>=4.2?'var(--green)':sttF>=3.8?'var(--blue)':'var(--orange)'};display:block;height:100%;border-radius:20px"></span></div><b>${t.stt}</b></div>`;}).join('');})()
   )}
 </div>`,
 
 't-eval':()=>H('일일평가','오늘 수업을 마친 학생별 출결, 집중도, 코칭, 학부모 공유 여부를 기록합니다.')+
 '<div id="eval-page-table" data-built="1">'+buildDailyEvalTable()+'</div>',
 
-'t-board':()=>{const admin=role==='admin';const me=admin?'정재현':'김밀당';const meTeam=admin?'본부':'B팀';return `<div class="page-head"><div><h1 class="page-title">사내 게시판</h1><p class="page-desc">월간 특별상, 인터뷰, 본부/회사 이슈, 진행 중인 TF와 모집 공고를 한곳에서 확인합니다. ${admin?'<b style="color:var(--blue)">관리자</b>는 공지를 작성할 수 있습니다.':'<b style="color:var(--blue)">팀원</b>은 자유 게시판에 실명으로 글을 남길 수 있습니다.'}</p></div><div class="actions"><button class="tb-btn-ghost"><iconify-icon icon="solar:filter-linear" style="font-size:15px"></iconify-icon>게시글 필터</button>${admin?`<button class="tb-btn-primary" onclick="alert('공지 작성 폼이 열립니다. (데모)')"><iconify-icon icon="solar:pen-new-square-linear" style="font-size:16px"></iconify-icon>새 공지 작성</button>`:`<button class="tb-btn-primary" onclick="document.getElementById('tb-free-title').focus()"><iconify-icon icon="solar:pen-new-square-linear" style="font-size:16px"></iconify-icon>글쓰기</button>`}</div></div>
+'t-board':()=>{const admin=role==='admin';const me=admin?'정재현':'김밀당';const meTeam=admin?'본부':'B팀';const _topT=buildTeacherRollup()[0]||{name:'원상희',room:'고등3실',rr:79};return `<div class="page-head"><div><h1 class="page-title">사내 게시판</h1><p class="page-desc">월간 특별상, 인터뷰, 본부/회사 이슈, 진행 중인 TF와 모집 공고를 한곳에서 확인합니다. ${admin?'<b style="color:var(--blue)">관리자</b>는 공지를 작성할 수 있습니다.':'<b style="color:var(--blue)">팀원</b>은 자유 게시판에 실명으로 글을 남길 수 있습니다.'}</p></div><div class="actions"><button class="tb-btn-ghost"><iconify-icon icon="solar:filter-linear" style="font-size:15px"></iconify-icon>게시글 필터</button>${admin?`<button class="tb-btn-primary" onclick="alert('공지 작성 폼이 열립니다. (데모)')"><iconify-icon icon="solar:pen-new-square-linear" style="font-size:16px"></iconify-icon>새 공지 작성</button>`:`<button class="tb-btn-primary" onclick="document.getElementById('tb-free-title').focus()"><iconify-icon icon="solar:pen-new-square-linear" style="font-size:16px"></iconify-icon>글쓰기</button>`}</div></div>
 
 <div class="tb-hero">
   <div class="tb-award">
@@ -3669,10 +3869,10 @@ PANEL('학생별 액션 아카이브',
       <p class="tb-award-desc">매월 특별상 컨셉은 운영 상황에 따라 변경됩니다. 재수강률 1위, 판매 1위, 환불 방어 1위, 신규 전액 결제 1위 등 매월 기준이 달라집니다.</p>
     </div>
     <div class="tb-winner-row">
-      <div class="tb-winner-av">윤</div>
+      <div class="tb-winner-av">${_topT.name[0]}</div>
       <div>
-        <div class="tb-winner-name">윤서진 매니저</div>
-        <div class="tb-winner-meta">강남 2팀 · 재수강률 83.4% · 전월 대비 +9.1%p</div>
+        <div class="tb-winner-name">${_topT.name} 선생님</div>
+        <div class="tb-winner-meta">${_topT.room} · 재수강률 ${_topT.rr}% · STT ${_topT.stt}점</div>
       </div>
     </div>
   </div>
