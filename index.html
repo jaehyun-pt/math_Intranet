@@ -1,4 +1,63 @@
 <!DOCTYPE html>
+<!--
+=================================================================
+밀당PT수학 인트라넷 — UI 프로토타입 (백엔드 연동 준비 버전)
+=================================================================
+
+## 연동 방법 (백엔드 개발자용)
+
+### 1. IS_MOCK 플래그
+  상단 <script> 내 API CLIENT 블록의 IS_MOCK = true 를 false 로 변경하면
+  실제 API 호출 모드로 전환됩니다. (mock 데이터 대신 fetch 사용)
+
+### 2. API_BASE
+  API_BASE = '/api' 를 실제 서버 주소로 변경
+  예: const API_BASE = 'https://api.mathontact.com'
+
+### 3. 필요한 API 엔드포인트 목록
+  인증:
+    POST  /api/auth/login          -> { token, role, name, teamId }
+    POST  /api/auth/logout
+  학생:
+    GET   /api/students            -> Student[]
+    GET   /api/students/:id        -> Student (phone/parent 포함)
+    POST  /api/students/:id/logs   -> { success }
+    PATCH /api/students/:id        -> { success }
+  일일 평가:
+    GET   /api/daily-eval?date=        -> DailyEval[]
+    PATCH /api/daily-eval/:studentId   -> { success }
+  개강 프로세스:
+    GET   /api/process?teacherId=             -> ProcessData[]
+    PATCH /api/process/:studentId/step/:index -> { success }
+  KPI:
+    GET   /api/kpi?teacherId=&period=  -> KpiData
+  학적 기록:
+    GET   /api/records/:studentId  -> Record[]
+    POST  /api/records/:studentId  -> { success }
+  Slack 알림:
+    POST  /api/notify/slack        -> { success }
+    (Webhook 직접 호출 대신 서버 경유 — 토큰 보안)
+
+### 4. 인증 토큰
+  로그인 성공 시 sessionStorage('auth_token')에 JWT 저장.
+  authHeaders()가 모든 API 요청에 Authorization: Bearer {token} 자동 첨부.
+  logout()은 sessionStorage를 비우고 새로고침.
+
+### 5. 개인정보(전화번호) 처리
+  data-phone / data-parent 등은 HTML에서 제거됨.
+  mock 단계에서는 AppData.contacts(또는 lookupContact)로 조회하며,
+  실연동 시 Api.getStudent(id) 응답의 phone/parent로 대체하세요.
+
+### 6. 데이터 모델 (참고)
+  Student   : { id, name, ini, cls, grade, gen, school, status, sCls,
+                teacher, curr, schedule, start, memo, salesReq,
+                steps: string[], logs: Log[] }
+  Log       : { c, date, t, d }
+  DailyEval : { grade, studentId, name, sToday, sAuto, sEnd,
+                attendance, coaching, classEnd, noResponse, absent,
+                memo, unlearned, supplement, autonomous, partial }
+=================================================================
+-->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -49,7 +108,7 @@ tailwind.config = {
   th,td{@apply text-left border-b border-gray-100;padding:13px 16px;white-space:nowrap}
   tr:last-child td{border-bottom:0}
   tbody tr:hover td{@apply bg-gray-50 transition-colors}
-  .table-wrap{@apply overflow-x-auto}
+  .table-wrap{@apply overflow-x-auto;-webkit-overflow-scrolling:touch}
   /* ── TAGS (status badges) ── */
   .tag{@apply inline-flex items-center rounded-lg font-bold;height:23px;padding:0 9px;font-size:11px;white-space:nowrap}
   .tag.b{@apply bg-blue-50 text-blue-600}
@@ -130,7 +189,7 @@ tailwind.config = {
 /* ── LAYOUT ── */
 .main-area{min-height:0;display:grid;grid-template-columns:212px 1fr}
 .sidebar{background:#111827;display:flex;flex-direction:column;overflow:auto;transition:transform .26s cubic-bezier(.4,0,.2,1)}
-.sb-brand{height:60px;display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sb-brand{height:60px;display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid rgba(255,255,255,.08);margin-top:14px}
 .sb-brand-mark{width:30px;height:30px;border-radius:10px;background:#3182F6;display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px;flex-shrink:0}
 .sb-brand-name{font-size:13px;font-weight:800;color:#fff;letter-spacing:-.02em}
 .sb-brand-sub{font-size:10.5px;font-weight:600;color:rgba(255,255,255,.4);margin-top:2px}
@@ -190,7 +249,7 @@ tailwind.config = {
 .check{width:16px;height:16px;border:1.5px solid #d1d5db;border-radius:5px;flex-shrink:0}
 
 /* ── HEAT MAP ── */
-.heat-wrap{overflow-x:auto}
+.heat-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .heat{display:grid;grid-template-columns:100px 80px repeat(10,1fr) 68px 64px;gap:6px;align-items:center;font-size:12px;margin-bottom:6px;min-width:800px}
 .heat.head{font-weight:800;color:#6b7280;font-size:11px}
 .cell{height:28px;border-radius:8px;display:grid;place-items:center;font-size:11px;font-weight:800}
@@ -796,6 +855,28 @@ tailwind.config = {
   .people,.tlead-grid{grid-template-columns:1fr}
   #my-kpi-cards.g4{grid-template-columns:1fr}
 }
+/* ── MOBILE (320px~640px) ── */
+@media(max-width:640px){
+  /* 로그인: hero 숨기고 box 전체폭 */
+  .login-wrap{grid-template-columns:1fr;gap:0}
+  .login-hero{display:none}
+  .login-box{width:100%;padding:32px 24px}
+  /* 검색 입력 전체폭 */
+  .filters .search,.search{min-width:0;width:100%}
+  /* 페이지 헤더 세로 정렬 */
+  .page-head{flex-direction:column;gap:12px}
+  .actions{flex-wrap:wrap}
+  /* 모달 bottom sheet 변환 */
+  .modal{padding:12px;align-items:flex-end}
+  .modal-box{width:100%;border-radius:20px 20px 0 0;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .srp-overlay{padding:12px}
+}
+@media(max-width:560px){
+  .kpi .val{font-size:26px}
+}
+@media(max-width:440px){
+  .tn-urole{display:none}
+}
 </style>
 </head>
 <body>
@@ -804,9 +885,9 @@ tailwind.config = {
 <div id="login-screen">
   <div class="login-wrap">
     <section class="login-hero">
-      <div class="lh-logo">MILDANG PT MATH</div>
-      <div class="lh-title">팀원이 출근하면<br><span>해야 할 일이 보이는</span><br>인트라넷</div>
-      <p class="lh-sub">개강 프로세스 · 학생 DB · STT 평가<br>도래자 · 내신 프로세스 통합 관리</p>
+      <div class="lh-logo"><img src="data:image/png;base64,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" alt="MILDANG PT MATH" style="height:18px;display:block;filter:brightness(0) invert(1)"></div>
+      <div class="lh-title">밀당PT수학<br><span>업무 시스템</span></div>
+      <p class="lh-sub">개강 프로세스 · 학생 DB<br>도래자 · 내신 프로세스 통합 관리</p>
     </section>
     <section class="login-box">
       <div class="lb-t">로그인</div>
@@ -863,7 +944,7 @@ tailwind.config = {
       <div class="sb-brand">
         <div class="sb-brand-mark">M</div>
         <div>
-          <div class="sb-brand-name">밀당PT수학</div>
+          <div class="sb-brand-name">밀당PT</div>
           <div class="sb-brand-sub">수학본부 업무 시스템</div>
         </div>
         <button class="sb-close" type="button" onclick="closeSidebar()" aria-label="메뉴 닫기"><iconify-icon icon="solar:close-circle-linear"></iconify-icon></button>
@@ -1006,16 +1087,189 @@ tailwind.config = {
 let role='teacher';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 
+// ====================================================
+// ★ MOCK DATA LAYER — 백엔드 연동 시 이 블록만 교체
+// 개발자 안내: 아래 각 항목을 API 응답으로 대체하세요
+// ====================================================
+const AppData = {
+
+  // GET /api/students
+  students: [
+  {id:'s1',name:'김민서',ini:'민',cls:'av-red',grade:'고1',gen:'635기',school:'유성여자고등학교',status:'위험군',sCls:'r',teacher:'박지훈',curr:'고2 내신 집중',schedule:'월화수목 21:30',start:'2026-06-08',phone:'010-9694-9248',pPhone:'010-9458-1413',mId:'minseo635',memo:'기본기 부족, 고난도 문제에서 좌절하고 포기하는 경향이 있어 초반 세심한 케어 필요',salesReq:'꼼꼼한 관리 요청',steps:['done','done','pending','pending','risk','pending','pending'],last:'오늘',logs:[{c:'r',date:'2026.06.09',t:'위험군 컨택 미실행',d:'학부모 유선 컨택 예정'},{c:'',date:'2026.06.08',t:'개강 1일차 수업 완료',d:'개강전 설문 응답 완료'},{c:'g',date:'2026.06.05',t:'진단고사 결과 확인',d:'68점 / 함수 활용 취약'}]},
+  {id:'s2',name:'고나원',ini:'나',cls:'av-orange',grade:'중2',gen:'635기',school:'중산중학교',status:'개강예정',sCls:'b',teacher:'박지훈',curr:'공통수학1',schedule:'월화수목 18:00',start:'2026-06-15',phone:'010-9749-5228',pPhone:'010-5550-5228',mId:'nawon635',memo:'루틴 관리와 반복 학습 요청, 개강 전 설문 미응답 상태로 확인 필요',salesReq:'고등수업 과정 희망',steps:['pending','pending','pending','pending','pending','pending','pending'],last:'어제',logs:[{c:'',date:'2026.06.08',t:'개강 전 설문 발송',d:'미응답 상태 확인 필요'},{c:'b',date:'2026.06.05',t:'진단고사 일정 안내',d:'6월 15일 예정'}]},
+  {id:'s3',name:'최서연',ini:'서',cls:'av-green',grade:'고2',gen:'636기',school:'대치고등학교',status:'재원중',sCls:'g',teacher:'박지훈',curr:'방학 특강',schedule:'토일 10:00',start:'2026-06-01',phone:'010-4821-1934',pPhone:'010-8821-1934',mId:'seoyeon636',memo:'특강 이후 정규반 전환 가능성 있음, 학습 태도 양호',salesReq:'방학 특강 결제 완료',steps:['done','done','done','done','done','done','done'],last:'2일 전',logs:[{c:'g',date:'2026.06.07',t:'1주차 계획 공유 완료',d:'개강 프로세스 전 단계 완료'},{c:'g',date:'2026.06.01',t:'개강 완료',d:'모든 세팅 완료'}]},
+  {id:'s4',name:'이도윤',ini:'도',cls:'av-purple',grade:'고3',gen:'633기',school:'분당고등학교',status:'이관예정',sCls:'o',teacher:'박지훈',curr:'고3 정규',schedule:'월수금 20:00',start:'2026-01-10',phone:'010-7123-4567',pPhone:'010-7123-4568',mId:'doyun633',memo:'3개월 재원, 이관 요청 접수 상태. 보호자 피드백 선호',salesReq:'이관 요청 접수됨',steps:['done','done','done','done','done','done','pending'],last:'3일 전',logs:[{c:'o',date:'2026.06.08',t:'이관 요청 접수',d:'담당 팀 조정 필요'},{c:'',date:'2026.06.05',t:'보호자 통화 부재',d:'재연락 예정'}]},
+  {id:'s5',name:'정우진',ini:'우',cls:'av-teal',grade:'고1',gen:'635기',school:'송파고등학교',status:'재원중',sCls:'g',teacher:'박지훈',curr:'공통수학2',schedule:'화목 19:00',start:'2026-06-08',phone:'010-5511-2233',pPhone:'010-5511-2234',mId:'woojin635',memo:'출결 변동 이력 있음. 학부모 확인 필요',salesReq:'성적 향상 집중 요청',steps:['done','done','done','done','pending','pending','pending'],last:'어제',logs:[{c:'',date:'2026.06.08',t:'1일차 수업 완료',d:'출결 정상'},{c:'o',date:'2026.06.03',t:'출결 상담 기록',d:'결석 1회 확인'}]},
+  {id:'s6',name:'박하은',ini:'하',cls:'av-pink',grade:'중1',gen:'636기',school:'중산중학교',status:'재원중',sCls:'g',teacher:'박지훈',curr:'중1-1',schedule:'월화 17:00',start:'2026-06-01',phone:'010-3344-5566',pPhone:'010-3344-5567',mId:'haeun636',memo:'수업 참여도 양호, 과제 제출 성실',salesReq:'기본기 강화 요청',steps:['done','done','done','pending','pending','pending','pending'],last:'어제',logs:[{c:'g',date:'2026.06.07',t:'개강 후 설문 완료',d:'만족도 높음'},{c:'',date:'2026.06.01',t:'개강 완료',d:'세팅 완료'}]},
+  {id:'s7',name:'윤서준',ini:'서',cls:'av-blue',grade:'고2',gen:'634기',school:'강남고등학교',status:'재원중',sCls:'g',teacher:'박지훈',curr:'수능 수학',schedule:'월수 21:00',start:'2026-03-02',phone:'010-9988-7766',pPhone:'010-9988-7765',mId:'seojun634',memo:'4개월 재원, 성적 안정적. 6월 도래 사전 안내 완료',salesReq:'심화 과정 요청',steps:['done','done','done','done','done','done','done'],last:'4일 전',logs:[{c:'g',date:'2026.06.04',t:'3개월 상담 완료',d:'재수강 의사 확인'},{c:'',date:'2026.05.20',t:'도래 사전 안내',d:'6월 도래 예정 안내'}]},
+  {id:'s8',name:'한지아',ini:'지',cls:'av-yellow',grade:'고1',gen:'635기',school:'서초고등학교',status:'위험군',sCls:'r',teacher:'박지훈',curr:'정규+특강',schedule:'월화수 20:00',start:'2026-06-08',phone:'010-1122-3344',pPhone:'010-1122-3345',mId:'jia635',memo:'개념 이해 빠르나 오답 복습 약함. 개강 후 설문 미응답',salesReq:'내신 대비 자료 추가 요청',steps:['done','pending','pending','pending','risk','pending','pending'],last:'오늘',logs:[{c:'r',date:'2026.06.09',t:'위험군 판정',d:'개강 후 설문 미응답'},{c:'',date:'2026.06.08',t:'개강 1일차',d:'수업 참여도 양호'}]},
+],
+
+  // GET /api/daily-eval?date=TODAY
+  dailyEval: [
+  {grade:'초6',studentId:'203-242940',name:'이지윤',sToday:'15:30',sAuto:'15:30',sEnd:'16:30',attendance:false,coaching:false,classEnd:false,noResponse:true,absent:true,memo:'월화는 6-1, 수목 중 1-1',unlearned:true,supplement:true,autonomous:true,partial:false},
+  {grade:'초6',studentId:'289-33670',name:'오민준',sToday:'15:30',sAuto:'15:30',sEnd:'16:30',attendance:true,coaching:true,classEnd:true,noResponse:true,absent:true,memo:'',unlearned:true,supplement:false,autonomous:false,partial:true},
+  {grade:'초6',studentId:'404-39966',name:'장은서',sToday:'15:30',sAuto:'15:30',sEnd:'17:30',attendance:false,coaching:false,classEnd:false,noResponse:true,absent:true,memo:'연산+개념',unlearned:true,supplement:true,autonomous:false,partial:false},
+  {grade:'중1',studentId:'636-48798',name:'김지윤',sToday:'15:30',sAuto:'15:30',sEnd:'18:30',attendance:false,coaching:false,classEnd:false,noResponse:true,absent:true,memo:'',unlearned:true,supplement:true,autonomous:true,partial:false},
+  {grade:'중1',studentId:'193-22652',name:'박서우',sToday:'16:00',sAuto:'16:00',sEnd:'17:30',attendance:true,coaching:true,classEnd:true,noResponse:true,absent:true,memo:'월, 화, 목 1시간 20분 수업',unlearned:true,supplement:false,autonomous:false,partial:true},
+  {grade:'초5',studentId:'358-37488',name:'임혜원',sToday:'16:00',sAuto:'16:00',sEnd:'17:00',attendance:true,coaching:true,classEnd:true,noResponse:true,absent:true,memo:'',unlearned:true,supplement:false,autonomous:false,partial:true},
+  {grade:'초5',studentId:'432-40862',name:'강민서',sToday:'16:00',sAuto:'16:00',sEnd:'17:00',attendance:true,coaching:true,classEnd:true,noResponse:true,absent:true,memo:'아버님 소통',unlearned:true,supplement:false,autonomous:false,partial:true},
+  {grade:'중1',studentId:'384-39037',name:'최수하',sToday:'16:30',sAuto:'16:30',sEnd:'18:30',attendance:true,coaching:true,classEnd:true,noResponse:true,absent:true,memo:'',unlearned:true,supplement:false,autonomous:false,partial:true}
+],
+
+  // GET /api/action-archive?teacherId=ME
+  actionArchive: [
+  {student:'김민서',date:'2026.06.09',type:'개강 프로세스',body:'개강 1일차 위험군 컨택 미실행 확인. 학부모 재안내 필요.'},
+  {student:'김민서',date:'2026.06.08',type:'상담 기록',body:'보호자 상담 진행. 학습 루틴 보완과 오답노트 점검 요청.'},
+  {student:'김민서',date:'2026.06.07',type:'비정기 테스트',body:'함수 단원 62점. 기본 개념 재확인 과제 부여.'},
+  {student:'고나원',date:'2026.06.09',type:'개강 프로세스',body:'개강 전 설문 미응답. 문자 재발송 후 유선 컨택 예정.'},
+  {student:'최서연',date:'2026.06.09',type:'비정기 테스트',body:'미적분 78점. 특강 이후 정규반 전환 가능성 높음.'},
+  {student:'박지율',date:'2026.06.09',type:'도래자 프로세스',body:'D-3 도래 컨택 완료. 학부모 상담 6월 12일 예약.'},
+  {student:'정우진',date:'2026.06.08',type:'명령지',body:'출결 관리 안내 명령지 검토 요청. 팀장 확인 대기.'}
+],
+
+  // GET /api/work-summary?teacherId=ME&date=TODAY
+  workSummary: {
+  opening:{title:'개강 프로세스',tag:'7건',items:['김민서 개강 전 설문 미응답 확인','고나원 진단고사 결과 업로드 대기','최서연 1주차 학습 계획 공유','이도윤 위험군 컨택 기록 필요']},
+  dorae:{title:'도래자 프로세스',tag:'3건',items:['김민수 D-7 재결제 안내','박지율 D-3 학부모 상담 예약','최하늘 D-Day 긴급 컨택']},
+  naeshin:{title:'내신 프로세스',tag:'5건',items:['이서윤 기출 분석 리포트 발송','최서연 시험 후 상담 일정 확정','김민서 오답 유형 정리','박지율 학교별 범위 확인']},
+  special:{title:'특강 프로세스',tag:'2건',items:['방학 특강 추천 대상자 미응답 후속 연락','정규반 전환 가능 학생 상담 메모']}
+},
+
+  // GET /api/students/:id (phone/parent)
+  contacts: {
+    // 전화번호 등 개인정보는 HTML이 아닌 데이터 레이어에만 보관 — 실연동 시 GET /api/students/:id 응답으로 대체
+    'minseo635':{phone:'010-9694-9248',parent:'010-9458-1413'},
+    'nawon635':{phone:'010-9749-5228',parent:'010-5550-5228'},
+    'seoyeon636':{phone:'010-4821-1934',parent:'010-8821-1934'},
+    '김민서':{phone:'010-9694-9248',parent:'010-9458-1413'},
+    '고나원':{phone:'010-9749-5228',parent:'010-5550-5228'},
+    '최서연':{phone:'010-4821-1934',parent:'010-8821-1934'},
+    '우태희':{phone:'010-3122-2703',parent:'010-6122-2703'},
+    '김리원':{phone:'010-2432-8575',parent:'010-7432-8575'},
+    '김예원':{phone:'010-2622-9978',parent:'010-6622-9978'}
+  },
+};
+
+// 하위 호환 별칭 — 기존 코드가 그대로 동작 (AppData와 동일 참조)
+const studentDB=AppData.students;
+const dailyEvalData=AppData.dailyEval;
+const actionArchive=AppData.actionArchive;
+const workDetails=AppData.workSummary;
+
+// ====================================================
+// ★ API CLIENT — IS_MOCK=false 시 실제 서버 호출
+// ====================================================
+const IS_MOCK = true;       // 개발 완료 후 false로 변경
+const API_BASE = '/api';    // 실제 서버 주소로 변경 (예: 'https://api.mathontact.com')
+
+// 인증 헤더 (JWT) — sessionStorage의 토큰을 모든 요청에 자동 첨부
+function authHeaders(){
+  const token = sessionStorage.getItem('auth_token');
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+}
+
+const Api = {
+  async getStudents(){
+    if(IS_MOCK) return AppData.students;
+    const res = await fetch(`${API_BASE}/students`, { headers: authHeaders() });
+    if(!res.ok) throw new Error('학생 목록 로드 실패');
+    return res.json();
+  },
+  async getDailyEval(date){
+    if(IS_MOCK) return AppData.dailyEval;
+    const res = await fetch(`${API_BASE}/daily-eval?date=${date}`, { headers: authHeaders() });
+    if(!res.ok) throw new Error('일일 평가 로드 실패');
+    return res.json();
+  },
+  async getStudent(id){
+    if(IS_MOCK) return AppData.students.find(s=>s.id===id || s.mId===id);
+    const res = await fetch(`${API_BASE}/students/${id}`, { headers: authHeaders() });
+    if(!res.ok) throw new Error('학생 조회 실패');
+    return res.json();
+  },
+  async saveActionLog(studentId, payload){
+    if(IS_MOCK){ console.log('[MOCK] saveActionLog', studentId, payload); return { success:true }; }
+    const res = await fetch(`${API_BASE}/students/${studentId}/logs`, {
+      method:'POST',
+      headers:{ ...authHeaders(), 'Content-Type':'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return res.json();
+  },
+  async updateProcessStep(studentId, stepIndex, status){
+    if(IS_MOCK){
+      console.log('[MOCK] updateProcessStep', studentId, stepIndex, status);
+      const s=AppData.students.find(x=>x.id===studentId);
+      if(s) s.steps[stepIndex]=status;
+      return { success:true };
+    }
+    return fetch(`${API_BASE}/process/${studentId}/step/${stepIndex}`, {
+      method:'PATCH',
+      headers:{ ...authHeaders(), 'Content-Type':'application/json' },
+      body: JSON.stringify({ status })
+    }).then(r=>r.json());
+  },
+  async updateEvalField(studentId, field, value){
+    if(IS_MOCK){
+      console.log('[MOCK] updateEvalField', studentId, field, value);
+      const d=AppData.dailyEval.find(x=>x.studentId===studentId);
+      if(d) d[field]=value;
+      return { success:true };
+    }
+    return fetch(`${API_BASE}/daily-eval/${studentId}`, {
+      method:'PATCH',
+      headers:{ ...authHeaders(), 'Content-Type':'application/json' },
+      body: JSON.stringify({ [field]: value })
+    }).then(r=>r.json());
+  },
+};
+
+// 연락처 조회 — mock은 AppData.contacts, 실연동은 Api.getStudent(id)의 phone/parent로 대체
+function lookupContact(key){
+  return (AppData.contacts && AppData.contacts[key]) || { phone:'', parent:'' };
+}
+
 function selectRole(next){
   role=next;
   $('#role-teacher').classList.toggle('sel',next==='teacher');
   $('#role-admin').classList.toggle('sel',next==='admin');
 }
 
-function login(){
+async function login(){
+  const email=$('.login-box input:not([type="password"])')?.value;
+  const pw=$('.login-box input[type="password"]')?.value;
+
+  if(IS_MOCK){
+    // Mock: 역할 선택만으로 로그인 (기존 동작 유지)
+    sessionStorage.setItem('auth_token','mock_token_'+role);
+    sessionStorage.setItem('auth_role',role);
+    sessionStorage.setItem('auth_name', role==='admin'?'정재현':'김밀당');
+    applyLoginState(role);
+    return;
+  }
+
+  // 실연동: POST /api/auth/login → { token, role, name, teamId }
+  try{
+    const res=await fetch(`${API_BASE}/auth/login`,{
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ email, password: pw, role })
+    });
+    if(!res.ok){ showToast('로그인 실패. 정보를 확인해주세요.'); return; }
+    const { token, role:serverRole, name }=await res.json();
+    sessionStorage.setItem('auth_token',token);
+    sessionStorage.setItem('auth_role',serverRole);
+    sessionStorage.setItem('auth_name',name);
+    role=serverRole;
+    applyLoginState(serverRole);
+  }catch(e){ showToast('서버 연결 실패'); console.error(e); }
+}
+
+function applyLoginState(r){
   $('#login-screen').style.display='none';
   $('#app').style.display='grid';
-  const admin=role==='admin';
+  const admin=r==='admin';
   $('#teacher-menu').style.display=admin?'none':'block';
   $('#admin-menu').style.display=admin?'block':'none';
   $('#tn-badge').textContent=admin?'관리자':'선생님';
@@ -1029,7 +1283,10 @@ function login(){
   setTimeout(updateNavBadges,50);
 }
 
-function logout(){location.reload()}
+function logout(){
+  sessionStorage.clear();
+  location.reload();
+}
 
 function openSidebar(){const sb=$('#sidebar'),ov=$('#sb-overlay');if(sb)sb.classList.add('open');if(ov)ov.classList.add('show');}
 function closeSidebar(){const sb=$('#sidebar'),ov=$('#sb-overlay');if(sb)sb.classList.remove('open');if(ov)ov.classList.remove('show');}
@@ -1129,12 +1386,6 @@ const TABLE=(heads,rows)=>`<div class="table-wrap"><table><thead><tr>${heads.map
 const TABS=items=>`<div class="tabs">${items.map((x,i)=>`<div class="tab ${i===0?'on':''}">${x}</div>`).join('')}</div>`;
 const PROG=(w,c='')=>`<span class="prog ${c}"><i style="width:${w}%"></i></span>`;
 
-const workDetails={
-  opening:{title:'개강 프로세스',tag:'7건',items:['김민서 개강 전 설문 미응답 확인','고나원 진단고사 결과 업로드 대기','최서연 1주차 학습 계획 공유','이도윤 위험군 컨택 기록 필요']},
-  dorae:{title:'도래자 프로세스',tag:'3건',items:['김민수 D-7 재결제 안내','박지율 D-3 학부모 상담 예약','최하늘 D-Day 긴급 컨택']},
-  naeshin:{title:'내신 프로세스',tag:'5건',items:['이서윤 기출 분석 리포트 발송','최서연 시험 후 상담 일정 확정','김민서 오답 유형 정리','박지율 학교별 범위 확인']},
-  special:{title:'특강 프로세스',tag:'2건',items:['방학 특강 추천 대상자 미응답 후속 연락','정규반 전환 가능 학생 상담 메모']}
-};
 
 const studentCards=[
   {name:'김민서',grade:'고1',group:'김민서',school:'유성여고',course:'고2 내신 집중',status:'개강 1일차',risk:'위험군',note:'기본기 부족을 인지하고 있으며 고난도 문제에서 포기 반응이 빠름',logs:['2026.06.09 비정기 테스트: 함수 단원 62점','2026.06.08 보호자 상담: 학습 루틴 보완 요청']},
@@ -1145,15 +1396,6 @@ const studentCards=[
   {name:'정우진',grade:'고1',group:'정우진',school:'송파고',course:'공통수학2',status:'명령지 검토',risk:'관찰',note:'출결 변동이 있어 학부모 확인 필요',logs:['2026.06.08 명령지 검토 요청','2026.06.03 출결 상담 기록']}
 ];
 
-const actionArchive=[
-  {student:'김민서',date:'2026.06.09',type:'개강 프로세스',body:'개강 1일차 위험군 컨택 미실행 확인. 학부모 재안내 필요.'},
-  {student:'김민서',date:'2026.06.08',type:'상담 기록',body:'보호자 상담 진행. 학습 루틴 보완과 오답노트 점검 요청.'},
-  {student:'김민서',date:'2026.06.07',type:'비정기 테스트',body:'함수 단원 62점. 기본 개념 재확인 과제 부여.'},
-  {student:'고나원',date:'2026.06.09',type:'개강 프로세스',body:'개강 전 설문 미응답. 문자 재발송 후 유선 컨택 예정.'},
-  {student:'최서연',date:'2026.06.09',type:'비정기 테스트',body:'미적분 78점. 특강 이후 정규반 전환 가능성 높음.'},
-  {student:'박지율',date:'2026.06.09',type:'도래자 프로세스',body:'D-3 도래 컨택 완료. 학부모 상담 6월 12일 예약.'},
-  {student:'정우진',date:'2026.06.08',type:'명령지',body:'출결 관리 안내 명령지 검토 요청. 팀장 확인 대기.'}
-];
 
 function openModal(title,body){
   $('#modal-title').textContent=title;
@@ -1180,15 +1422,21 @@ function showStudentDetail(name){
     <div class="detail-item"><label>최근 기록</label><strong>${s.logs.join('<br>')}</strong></div>
   </div>`);
 }
-function addStudentNote(name){
+async function addStudentNote(name){
   const area=document.querySelector(`[data-note-input="${name}"]`);
   const list=document.querySelector(`[data-note-list="${name}"]`);
   if(!area||!list||!area.value.trim())return;
-  const item=document.createElement('div');
-  item.className='note-item';
-  item.innerHTML=`${area.value.trim()}<small>방금 추가 · 김밀당</small>`;
-  list.prepend(item);
-  area.value='';
+  const text=area.value.trim();
+  const student=AppData.students.find(s=>s.name===name);
+  const payload={ type:'메모', body:text, date:new Date().toISOString().slice(0,10) };
+  try{
+    await Api.saveActionLog(student?.id, payload);
+    const item=document.createElement('div');
+    item.className='note-item';
+    item.innerHTML=`${text}<small>방금 추가 · 김밀당</small>`;
+    list.prepend(item);
+    area.value='';
+  }catch(e){ showToast('메모 저장 실패'); console.error(e); }
 }
 function switchStudentPane(key){
   $$('.student-tab').forEach(x=>x.classList.toggle('on',x.dataset.studentTab===key));
@@ -1302,8 +1550,8 @@ function openingSelectStudent(el){
       '<div class="detail-item"><label>개강일</label><strong>'+el.dataset.start+'</strong></div>'+
       '<div class="detail-item"><label>학교</label><strong>'+el.dataset.school+'</strong></div>'+
       '<div class="detail-item"><label>현 커리</label><strong>'+el.dataset.curr+'</strong></div>'+
-      '<div class="detail-item"><label>학생 번호</label><strong>'+el.dataset.phone+'</strong></div>'+
-      '<div class="detail-item"><label>보호자 번호</label><strong>'+el.dataset.parent+'</strong></div>'+
+      '<div class="detail-item"><label>학생 번호</label><strong>'+lookupContact(el.dataset.name).phone+'</strong></div>'+
+      '<div class="detail-item"><label>보호자 번호</label><strong>'+lookupContact(el.dataset.name).parent+'</strong></div>'+
     '</div>'+
     '<div class="proc-block"><h4>학생 DB 메모</h4><p>'+el.dataset.note+'</p></div>';
 }
@@ -1331,8 +1579,8 @@ function smSelectOpeningRow(row){
   s.className=row.dataset.status==='완료'?'tag g':'tag r';
   $('#sm-od-id').textContent=row.dataset.id;
   $('#sm-od-start').textContent=row.dataset.start;
-  $('#sm-od-phone').textContent=row.dataset.phone;
-  $('#sm-od-parent').textContent=row.dataset.parent;
+  $('#sm-od-phone').textContent=lookupContact(row.dataset.id).phone;
+  $('#sm-od-parent').textContent=lookupContact(row.dataset.id).parent;
   $('#sm-od-school').textContent=row.dataset.school;
   $('#sm-od-fulltime').textContent=row.dataset.fulltime;
   $('#sm-od-request').textContent=row.dataset.request;
@@ -1367,8 +1615,8 @@ function smSelectCommandRow(row){
   $('#sm-cmd-summary').textContent=row.dataset.commandGrade+' · '+row.dataset.commandCurriculum+' · '+row.dataset.commandTeacher;
   $('#sm-cmd-director').textContent=row.dataset.commandDirector;
   $('#sm-cmd-school').textContent=row.dataset.commandSchool;
-  $('#sm-cmd-phone').textContent=row.dataset.commandPhone;
-  $('#sm-cmd-parent').textContent=row.dataset.commandParent;
+  $('#sm-cmd-phone').textContent=lookupContact(row.dataset.commandName).phone;
+  $('#sm-cmd-parent').textContent=lookupContact(row.dataset.commandName).parent;
   $('#sm-cmd-note').textContent=row.dataset.commandNote;
   const r=$('#sm-cmd-result'); if(r) r.value=row.dataset.commandResult;
 }
@@ -1390,8 +1638,8 @@ function srSelectOpeningRow(row){
   s.className=row.dataset.status==='완료'?'tag g':'tag r';
   $('#sr-od-id').textContent=row.dataset.id;
   $('#sr-od-start').textContent=row.dataset.start;
-  $('#sr-od-phone').textContent=row.dataset.phone;
-  $('#sr-od-parent').textContent=row.dataset.parent;
+  $('#sr-od-phone').textContent=lookupContact(row.dataset.id).phone;
+  $('#sr-od-parent').textContent=lookupContact(row.dataset.id).parent;
   $('#sr-od-school').textContent=row.dataset.school;
   $('#sr-od-fulltime').textContent=row.dataset.fulltime;
   $('#sr-od-request').textContent=row.dataset.request;
@@ -1419,8 +1667,8 @@ function srSelectCommandRow(row){
   $('#sr-cmd-summary').textContent=row.dataset.commandGrade+' · '+row.dataset.commandCurriculum+' · '+row.dataset.commandTeacher;
   $('#sr-cmd-director').textContent=row.dataset.commandDirector;
   $('#sr-cmd-school').textContent=row.dataset.commandSchool;
-  $('#sr-cmd-phone').textContent=row.dataset.commandPhone;
-  $('#sr-cmd-parent').textContent=row.dataset.commandParent;
+  $('#sr-cmd-phone').textContent=lookupContact(row.dataset.commandName).phone;
+  $('#sr-cmd-parent').textContent=lookupContact(row.dataset.commandName).parent;
   $('#sr-cmd-note').textContent=row.dataset.commandNote;
   const r=$('#sr-cmd-result'); if(r) r.value=row.dataset.commandResult;
 }
@@ -1431,8 +1679,7 @@ function srInit(){
   if(r2) srSelectCommandRow(r2);
 }
 // ── ATS 학생 관리 ──
-// ── MOCK MODE ──
-const IS_MOCK = true;
+// ── MOCK MODE (IS_MOCK·API_BASE는 상단 API CLIENT 블록에서 정의) ──
 const SLACK_WEBHOOK_URL = '';
 function showToast(msg){
   const t=document.createElement('div');
@@ -1442,7 +1689,7 @@ function showToast(msg){
 }
 function slackSend(msg,channel){
   if(IS_MOCK){console.log('[SLACK MOCK →'+(channel||'general')+']',msg);showToast('Slack 발송 완료 (Mock)');}
-  else{fetch(SLACK_WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:msg,channel:channel||'#general'})});}
+  else{fetch(`${API_BASE}/notify/slack`,{method:'POST',headers:{...authHeaders(),'Content-Type':'application/json'},body:JSON.stringify({text:msg,channel:channel||'#general'})});}
 }
 
 // ── COMPLETION REPORT STATE ──
@@ -1502,16 +1749,6 @@ function sendNotification(name){
 }
 
 // ── DAILY EVAL DATA ──
-const dailyEvalData=[
-  {grade:'초6',studentId:'203-242940',name:'이지윤',sToday:'15:30',sAuto:'15:30',sEnd:'16:30',attendance:false,coaching:false,classEnd:false,noResponse:true,absent:true,memo:'월화는 6-1, 수목 중 1-1',unlearned:true,supplement:true,autonomous:true,partial:false},
-  {grade:'초6',studentId:'289-33670',name:'오민준',sToday:'15:30',sAuto:'15:30',sEnd:'16:30',attendance:true,coaching:true,classEnd:true,noResponse:true,absent:true,memo:'',unlearned:true,supplement:false,autonomous:false,partial:true},
-  {grade:'초6',studentId:'404-39966',name:'장은서',sToday:'15:30',sAuto:'15:30',sEnd:'17:30',attendance:false,coaching:false,classEnd:false,noResponse:true,absent:true,memo:'연산+개념',unlearned:true,supplement:true,autonomous:false,partial:false},
-  {grade:'중1',studentId:'636-48798',name:'김지윤',sToday:'15:30',sAuto:'15:30',sEnd:'18:30',attendance:false,coaching:false,classEnd:false,noResponse:true,absent:true,memo:'',unlearned:true,supplement:true,autonomous:true,partial:false},
-  {grade:'중1',studentId:'193-22652',name:'박서우',sToday:'16:00',sAuto:'16:00',sEnd:'17:30',attendance:true,coaching:true,classEnd:true,noResponse:true,absent:true,memo:'월, 화, 목 1시간 20분 수업',unlearned:true,supplement:false,autonomous:false,partial:true},
-  {grade:'초5',studentId:'358-37488',name:'임혜원',sToday:'16:00',sAuto:'16:00',sEnd:'17:00',attendance:true,coaching:true,classEnd:true,noResponse:true,absent:true,memo:'',unlearned:true,supplement:false,autonomous:false,partial:true},
-  {grade:'초5',studentId:'432-40862',name:'강민서',sToday:'16:00',sAuto:'16:00',sEnd:'17:00',attendance:true,coaching:true,classEnd:true,noResponse:true,absent:true,memo:'아버님 소통',unlearned:true,supplement:false,autonomous:false,partial:true},
-  {grade:'중1',studentId:'384-39037',name:'최수하',sToday:'16:30',sAuto:'16:30',sEnd:'18:30',attendance:true,coaching:true,classEnd:true,noResponse:true,absent:true,memo:'',unlearned:true,supplement:false,autonomous:false,partial:true}
-];
 function buildDailyEvalTable(){
   const grades=['초5','초6','중1','중2','중3','고1','고2','고3'];
   const times=['15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00'];
@@ -1564,7 +1801,12 @@ function buildDailyEvalTable(){
   html+='</tbody></table></div>';
   return html;
 }
-function evalUpdate(i,key,val){dailyEvalData[i][key]=val;}
+async function evalUpdate(i,key,val){
+  AppData.dailyEval[i][key]=val;                 // 낙관적 업데이트
+  const studentId=AppData.dailyEval[i].studentId;
+  try{ await Api.updateEvalField(studentId,key,val); }
+  catch(e){ AppData.dailyEval[i][key]=!val; showToast('저장 실패'); console.error(e); }
+}
 function evalUpdateAtt(i,cb){
   dailyEvalData[i].attendance=cb.checked;
   cb.style.accentColor=cb.checked?'#16a34a':'#ef4444';
@@ -1753,16 +1995,6 @@ function getRoomStats(silName){
   return ROOM_STATS_DB[key]||null;
 }
 
-const studentDB=[
-  {id:'s1',name:'김민서',ini:'민',cls:'av-red',grade:'고1',gen:'635기',school:'유성여자고등학교',status:'위험군',sCls:'r',teacher:'박지훈',curr:'고2 내신 집중',schedule:'월화수목 21:30',start:'2026-06-08',phone:'010-9694-9248',pPhone:'010-9458-1413',mId:'minseo635',memo:'기본기 부족, 고난도 문제에서 좌절하고 포기하는 경향이 있어 초반 세심한 케어 필요',salesReq:'꼼꼼한 관리 요청',steps:['done','done','pending','pending','risk','pending','pending'],last:'오늘',logs:[{c:'r',date:'2026.06.09',t:'위험군 컨택 미실행',d:'학부모 유선 컨택 예정'},{c:'',date:'2026.06.08',t:'개강 1일차 수업 완료',d:'개강전 설문 응답 완료'},{c:'g',date:'2026.06.05',t:'진단고사 결과 확인',d:'68점 / 함수 활용 취약'}]},
-  {id:'s2',name:'고나원',ini:'나',cls:'av-orange',grade:'중2',gen:'635기',school:'중산중학교',status:'개강예정',sCls:'b',teacher:'박지훈',curr:'공통수학1',schedule:'월화수목 18:00',start:'2026-06-15',phone:'010-9749-5228',pPhone:'010-5550-5228',mId:'nawon635',memo:'루틴 관리와 반복 학습 요청, 개강 전 설문 미응답 상태로 확인 필요',salesReq:'고등수업 과정 희망',steps:['pending','pending','pending','pending','pending','pending','pending'],last:'어제',logs:[{c:'',date:'2026.06.08',t:'개강 전 설문 발송',d:'미응답 상태 확인 필요'},{c:'b',date:'2026.06.05',t:'진단고사 일정 안내',d:'6월 15일 예정'}]},
-  {id:'s3',name:'최서연',ini:'서',cls:'av-green',grade:'고2',gen:'636기',school:'대치고등학교',status:'재원중',sCls:'g',teacher:'박지훈',curr:'방학 특강',schedule:'토일 10:00',start:'2026-06-01',phone:'010-4821-1934',pPhone:'010-8821-1934',mId:'seoyeon636',memo:'특강 이후 정규반 전환 가능성 있음, 학습 태도 양호',salesReq:'방학 특강 결제 완료',steps:['done','done','done','done','done','done','done'],last:'2일 전',logs:[{c:'g',date:'2026.06.07',t:'1주차 계획 공유 완료',d:'개강 프로세스 전 단계 완료'},{c:'g',date:'2026.06.01',t:'개강 완료',d:'모든 세팅 완료'}]},
-  {id:'s4',name:'이도윤',ini:'도',cls:'av-purple',grade:'고3',gen:'633기',school:'분당고등학교',status:'이관예정',sCls:'o',teacher:'박지훈',curr:'고3 정규',schedule:'월수금 20:00',start:'2026-01-10',phone:'010-7123-4567',pPhone:'010-7123-4568',mId:'doyun633',memo:'3개월 재원, 이관 요청 접수 상태. 보호자 피드백 선호',salesReq:'이관 요청 접수됨',steps:['done','done','done','done','done','done','pending'],last:'3일 전',logs:[{c:'o',date:'2026.06.08',t:'이관 요청 접수',d:'담당 팀 조정 필요'},{c:'',date:'2026.06.05',t:'보호자 통화 부재',d:'재연락 예정'}]},
-  {id:'s5',name:'정우진',ini:'우',cls:'av-teal',grade:'고1',gen:'635기',school:'송파고등학교',status:'재원중',sCls:'g',teacher:'박지훈',curr:'공통수학2',schedule:'화목 19:00',start:'2026-06-08',phone:'010-5511-2233',pPhone:'010-5511-2234',mId:'woojin635',memo:'출결 변동 이력 있음. 학부모 확인 필요',salesReq:'성적 향상 집중 요청',steps:['done','done','done','done','pending','pending','pending'],last:'어제',logs:[{c:'',date:'2026.06.08',t:'1일차 수업 완료',d:'출결 정상'},{c:'o',date:'2026.06.03',t:'출결 상담 기록',d:'결석 1회 확인'}]},
-  {id:'s6',name:'박하은',ini:'하',cls:'av-pink',grade:'중1',gen:'636기',school:'중산중학교',status:'재원중',sCls:'g',teacher:'박지훈',curr:'중1-1',schedule:'월화 17:00',start:'2026-06-01',phone:'010-3344-5566',pPhone:'010-3344-5567',mId:'haeun636',memo:'수업 참여도 양호, 과제 제출 성실',salesReq:'기본기 강화 요청',steps:['done','done','done','pending','pending','pending','pending'],last:'어제',logs:[{c:'g',date:'2026.06.07',t:'개강 후 설문 완료',d:'만족도 높음'},{c:'',date:'2026.06.01',t:'개강 완료',d:'세팅 완료'}]},
-  {id:'s7',name:'윤서준',ini:'서',cls:'av-blue',grade:'고2',gen:'634기',school:'강남고등학교',status:'재원중',sCls:'g',teacher:'박지훈',curr:'수능 수학',schedule:'월수 21:00',start:'2026-03-02',phone:'010-9988-7766',pPhone:'010-9988-7765',mId:'seojun634',memo:'4개월 재원, 성적 안정적. 6월 도래 사전 안내 완료',salesReq:'심화 과정 요청',steps:['done','done','done','done','done','done','done'],last:'4일 전',logs:[{c:'g',date:'2026.06.04',t:'3개월 상담 완료',d:'재수강 의사 확인'},{c:'',date:'2026.05.20',t:'도래 사전 안내',d:'6월 도래 예정 안내'}]},
-  {id:'s8',name:'한지아',ini:'지',cls:'av-yellow',grade:'고1',gen:'635기',school:'서초고등학교',status:'위험군',sCls:'r',teacher:'박지훈',curr:'정규+특강',schedule:'월화수 20:00',start:'2026-06-08',phone:'010-1122-3344',pPhone:'010-1122-3345',mId:'jia635',memo:'개념 이해 빠르나 오답 복습 약함. 개강 후 설문 미응답',salesReq:'내신 대비 자료 추가 요청',steps:['done','pending','pending','pending','risk','pending','pending'],last:'오늘',logs:[{c:'r',date:'2026.06.09',t:'위험군 판정',d:'개강 후 설문 미응답'},{c:'',date:'2026.06.08',t:'개강 1일차',d:'수업 참여도 양호'}]},
-];
 const ATS_STEP_LABELS=['개강전설문','진단고사','개강후설문','1일차공유','위험군컨택','1주차계획','환불방어'];
 let atsState='s1';
 function atsRenderInfo(s){
@@ -3535,22 +3767,28 @@ function closeSRP(){
   $('#srp-img-preview').innerHTML='';
 }
 
-function saveSRPRecord(){
+async function saveSRPRecord(){
   const name=$('#srp-student-sel').value;
   const type=$('#srp-type-sel').value||'기타';
   const title=$('#srp-title-inp').value.trim();
   const content=$('#srp-content-inp').value.trim();
   if(!name){alert('학생을 선택하세요.');return;}
   if(!content){alert('내용을 입력하세요.');return;}
-  if(!srpLogs[name])srpLogs[name]=[];
   const imgs=[...$('#srp-img-preview').querySelectorAll('img')].map(i=>i.src);
   const today=new Date().toISOString().slice(0,10).replace(/-/g,'.');
-  srpLogs[name].unshift({date:today,type,title,body:content,imgs});
-  renderSRPLogs(name);
-  $('#srp-title-inp').value='';
-  $('#srp-content-inp').value='';
-  $('#srp-file-preview').innerHTML='';
-  $('#srp-img-preview').innerHTML='';
+  const student=AppData.students.find(s=>s.name===name);
+  const payload={ type, title, body:content, date:today, imgs };
+  try{
+    await Api.saveActionLog(student?.id, payload);
+    if(!srpLogs[name])srpLogs[name]=[];
+    srpLogs[name].unshift({date:today,type,title,body:content,imgs});
+    renderSRPLogs(name);
+    $('#srp-title-inp').value='';
+    $('#srp-content-inp').value='';
+    $('#srp-file-preview').innerHTML='';
+    $('#srp-img-preview').innerHTML='';
+    showToast('기록이 저장되었습니다.');
+  }catch(e){ showToast('저장 실패 — 다시 시도해주세요.'); console.error(e); }
 }
 
 function previewFiles(input,targetId){
@@ -3801,7 +4039,6 @@ ${(()=>{const rc=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes
           data-name="김민서" data-gen="635기" data-grade="고1" data-time="21:30"
           data-fulltime="월 21:30 / 화 21:30 / 수 21:30 / 목 21:30"
           data-id="minseo635" data-start="2026-06-08"
-          data-phone="010-9694-9248" data-parent="010-9458-1413"
           data-school="유성여자고등학교"
           data-request="하고자 하는 마음은 있는데 기본기가 없어서 난이도 있는 문제를 대하면 좌절하고 포기하는 편"
           data-sales="꼼꼼한 관리 요청" data-status="세팅 필요">
@@ -3813,7 +4050,6 @@ ${(()=>{const rc=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes
           data-name="고나원" data-gen="635기" data-grade="중2" data-time="18:00"
           data-fulltime="월 18:00 / 화 18:00 / 수 18:00 / 목 18:00"
           data-id="nawon635" data-start="2026-06-08"
-          data-phone="010-9749-5228" data-parent="010-5550-5228"
           data-school="중산중학교"
           data-request="모르는 문제 해결과 루틴 관리가 필요하며 부족한 부분의 반복 학습 요청"
           data-sales="고등수업 과정 희망, 경시 난도 및 실력 점검 요청" data-status="세팅 필요">
@@ -3825,7 +4061,6 @@ ${(()=>{const rc=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes
           data-name="최서연" data-gen="636기" data-grade="고2" data-time="10:00"
           data-fulltime="토 10:00 / 일 10:00"
           data-id="seoyeon636" data-start="2026-06-13"
-          data-phone="010-4821-1934" data-parent="010-8821-1934"
           data-school="대치고등학교"
           data-request="방학 특강 일정과 내신 병행 가능 여부 확인 요청"
           data-sales="방학 특강 결제 안내 완료, 교재 수령 확인 필요" data-status="완료">
@@ -4016,7 +4251,6 @@ ${(()=>{const rc=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes
           <tr class="command-row selected"
             data-command-name="김민서" data-command-grade="고1" data-command-curriculum="중3-1"
             data-command-teacher="박지훈" data-command-director="유민지"
-            data-command-phone="010-9694-9248" data-command-parent="010-9458-1413"
             data-command-school="유성여자고등학교"
             data-command-note="교재 수령 확인 및 첫주 컨택 예약 필요"
             data-command-result="DB 최종 삭제">
@@ -4028,7 +4262,6 @@ ${(()=>{const rc=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes
           <tr class="command-row"
             data-command-name="우태희" data-command-grade="고1" data-command-curriculum="공통수학1"
             data-command-teacher="박지훈" data-command-director="유민지"
-            data-command-phone="010-3122-2703" data-command-parent="010-6122-2703"
             data-command-school="중산고등학교"
             data-command-note="공통수학1 종료 후 다음 커리 전환 안내 필요"
             data-command-result="DB 최종 삭제">
@@ -4040,7 +4273,6 @@ ${(()=>{const rc=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes
           <tr class="command-row"
             data-command-name="김리원" data-command-grade="고1" data-command-curriculum="공통수학1"
             data-command-teacher="박지훈" data-command-director="유민지"
-            data-command-phone="010-2432-8575" data-command-parent="010-7432-8575"
             data-command-school="대치고등학교"
             data-command-note="수업 종료 후 학부모에게 종료 안내 필요"
             data-command-result="DB 최종 삭제">
@@ -4052,7 +4284,6 @@ ${(()=>{const rc=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes
           <tr class="command-row"
             data-command-name="김예원" data-command-grade="고1" data-command-curriculum="중2-1"
             data-command-teacher="박지훈" data-command-director="유민지"
-            data-command-phone="010-2622-9978" data-command-parent="010-6622-9978"
             data-command-school="서초고등학교"
             data-command-note="중2-1 커리 종료, 다음 학습 상담 필요"
             data-command-result="DB 최종 삭제">
@@ -4139,7 +4370,6 @@ ${(()=>{const rc=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes
               <td><div class="proc-student-cell" onclick="openingSelectStudent(this)"
                 data-name="김민서" data-grade="고1" data-gen="635기"
                 data-start="2026-06-08" data-school="유성여자고등학교"
-                data-phone="010-9694-9248" data-parent="010-9458-1413"
                 data-curr="고2 내신 집중" data-risk="위험군"
                 data-note="기본기 부족을 인지하고 있으며 고난도 문제에서 포기 반응이 빠름">
                 <strong>김민서</strong><span>고1 · 635기</span>
@@ -4157,7 +4387,6 @@ ${(()=>{const rc=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes
               <td><div class="proc-student-cell" onclick="openingSelectStudent(this)"
                 data-name="고나원" data-grade="중2" data-gen="635기"
                 data-start="2026-06-10" data-school="중산중학교"
-                data-phone="010-9749-5228" data-parent="010-5550-5228"
                 data-curr="공통수학1" data-risk="판정 전"
                 data-note="루틴 관리와 반복 학습 요청이 강함">
                 <strong>고나원</strong><span>중2 · 635기</span>
@@ -4175,7 +4404,6 @@ ${(()=>{const rc=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes
               <td><div class="proc-student-cell" onclick="openingSelectStudent(this)"
                 data-name="최서연" data-grade="고2" data-gen="636기"
                 data-start="2026-06-01" data-school="대치고등학교"
-                data-phone="010-4821-1934" data-parent="010-8821-1934"
                 data-curr="방학 특강" data-risk="일반"
                 data-note="특강 이후 정규반 전환 가능성 있음">
                 <strong>최서연</strong><span>고2 · 636기</span>
