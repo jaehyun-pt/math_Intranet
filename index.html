@@ -310,7 +310,7 @@ tailwind.config = {
 .student-pane{display:none}.student-pane.on{display:block}
 
 /* ── OPENING PROCESS DETAIL ── */
-.process-layout{display:grid;grid-template-columns:minmax(0,1.45fr) 360px;gap:16px}
+.process-layout{display:grid;grid-template-columns:1fr;gap:16px}
 .process-table{min-width:980px}
 .process-table th{text-align:center}
 .process-table td{text-align:center}
@@ -392,7 +392,7 @@ tailwind.config = {
 .check-list{display:grid;gap:8px;margin-top:10px}
 .check-item{display:flex;align-items:center;gap:9px;border:1px solid #F3F4F6;border-radius:10px;padding:9px 10px;background:#fff;font-size:13px}
 .check-item input[type=checkbox]{width:16px;min-height:16px;accent-color:#3182F6}
-.proc-student-cell{display:grid;gap:3px;cursor:pointer;border-radius:10px;padding:6px 8px;min-width:100px}
+.proc-student-cell{display:grid;gap:3px;cursor:pointer;border-radius:10px;padding:6px 8px;min-width:70px}
 .proc-student-cell strong{font-size:14px}
 .proc-student-cell span{color:#6B7280;font-size:12px}
 .proc-student-cell:hover{background:#EFF6FF}
@@ -877,6 +877,81 @@ tailwind.config = {
 @media(max-width:440px){
   .tn-urole{display:none}
 }
+/* ── 액션 상세 팝업 ── */
+.ap-overlay{position:fixed;inset:0;background:rgba(17,24,39,.5);display:none;align-items:flex-start;justify-content:center;padding-top:60px;z-index:200;overflow-y:auto}
+.ap-overlay.show{display:flex}
+.ap-box{background:#fff;border-radius:20px;width:100%;max-width:560px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.18);overflow:hidden}
+.ap-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 58px 14px 20px;border-bottom:1px solid #f3f4f6}
+.ap-head-left h3{font-size:16px;font-weight:800;color:#111827;margin:0 0 2px}
+.ap-head-left p{font-size:12px;color:#6b7280;margin:0}
+.ap-scores{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 20px;border-bottom:1px solid #f3f4f6}
+.ap-score-seg{background:#f9fafb;border-radius:10px;padding:10px 14px}
+.ap-score-seg label{font-size:11px;color:#9ca3af;font-weight:600;display:block;margin-bottom:4px}
+.ap-score-seg strong{font-size:20px;font-weight:900;color:#111827}
+.ap-score-seg strong span{font-size:12px;font-weight:500;color:#6b7280;margin-left:2px}
+.ap-body{padding:16px 20px;max-height:60vh;overflow-y:auto}
+.ap-close{position:absolute;top:14px;right:16px;width:30px;height:30px;border-radius:8px;background:#f3f4f6;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:#374151}
+.ap-close:hover{background:#e5e7eb}
+/* ── 개강전 설문 팝업 ── */
+.srp-overlay{position:fixed;inset:0;background:rgba(17,24,39,.5);display:none;align-items:flex-start;justify-content:center;padding-top:60px;z-index:200;overflow-y:auto}
+.srp-overlay.show{display:flex}
+.srp-box{background:#fff;border-radius:16px;width:min(860px,96vw);position:relative;overflow:hidden;margin-bottom:40px;border:0.5px solid #e5e7eb}
+.psp-toast{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;font-size:12px;padding:7px 18px;border-radius:20px;display:flex;align-items:center;gap:6px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;z-index:10}
+.psp-toast.show{opacity:1}
+.psp-top{padding:16px 20px 14px;border-bottom:1px solid #f3f4f6}
+.psp-meta-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.psp-tag-survey{font-size:11px;background:#eff6ff;color:#1e40af;border:0.5px solid #93c5fd;padding:3px 9px;border-radius:20px}
+.psp-tag-day{font-size:11px;background:#f9fafb;color:#6b7280;border:0.5px solid #e5e7eb;padding:3px 9px;border-radius:20px}
+.psp-name-row{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+.psp-name{font-size:20px;font-weight:700;color:#111827}
+.psp-grade{font-size:13px;color:#6b7280}
+.psp-send-row{display:flex;gap:8px;align-items:center}
+.psp-send-btn{background:#f9fafb;border:0.5px solid #e5e7eb;color:#111827;font-size:12px;padding:6px 14px;border-radius:6px;cursor:pointer}
+.psp-send-btn:hover{background:#f3f4f6}
+.psp-resp{margin-left:auto;font-size:12px;display:flex;align-items:center;gap:4px}
+.psp-resp.done{color:#16a34a}
+.psp-resp.wait{color:#d97706}
+.psp-status-row{display:flex;gap:0;margin:14px 20px 0}
+.psp-stat-seg{flex:1;padding:10px;text-align:center;border:0.5px solid #e5e7eb;background:#f9fafb}
+.psp-stat-seg:first-child{border-radius:8px 0 0 8px}
+.psp-stat-seg:last-child{border-radius:0 8px 8px 0}
+.psp-stat-label{font-size:11px;color:#6b7280;margin-bottom:3px}
+.psp-stat-val{font-size:15px;font-weight:700;color:#111827}
+.psp-level-위험{display:inline-block;background:#fee2e2;color:#991b1b;border:0.5px solid #fca5a5;font-size:13px;font-weight:700;padding:4px 14px;border-radius:20px}
+.psp-level-주의{display:inline-block;background:#fffbeb;color:#92400e;border:0.5px solid #fcd34d;font-size:13px;font-weight:700;padding:4px 14px;border-radius:20px}
+.psp-level-안전{display:inline-block;background:#f0fdf4;color:#166534;border:0.5px solid #86efac;font-size:13px;font-weight:700;padding:4px 14px;border-radius:20px}
+.psp-qa{padding:4px 5% 4px;margin-top:12px}
+.psp-qa-header{display:grid;grid-template-columns:28px 1fr 150px;gap:8px;font-size:11px;color:#6b7280;padding:6px 0;border-bottom:1px solid #e5e7eb;margin-bottom:2px}
+.psp-qa-item{display:grid;grid-template-columns:28px 1fr 150px;gap:8px;font-size:13px;padding:8px 0;border-bottom:1px solid #f3f4f6;align-items:start}
+.psp-qa-item:last-child{border-bottom:none}
+.psp-qa-num{color:#9ca3af;font-size:12px}
+.psp-qa-warn{color:#dc2626;font-weight:600}
+.psp-action{background:#fafaf9;border-top:1px solid #f3f4f6;padding:12px 20px}
+.psp-action-title{font-size:12px;font-weight:700;color:#374151;margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.psp-action-item{display:flex;gap:6px;align-items:flex-start;margin-bottom:5px;font-size:12px;color:#374151;line-height:1.6}
+.psp-action-dot{width:6px;height:6px;border-radius:50%;background:#f59e0b;margin-top:5px;flex-shrink:0}
+.psp-action-check{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;margin-bottom:8px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;cursor:pointer;transition:background .12s}
+.psp-action-check:hover{background:#f9fafb}
+.psp-action-check input{margin-top:2px;width:15px;height:15px;flex-shrink:0;accent-color:#f59e0b;cursor:pointer}
+.psp-action-text{display:flex;flex-direction:column;gap:2px}
+.psp-action-text b{font-size:13px;font-weight:700;color:#111827}
+.psp-action-text small{font-size:12px;color:#6b7280;line-height:1.5}
+.psp-qa-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px;table-layout:fixed}
+.psp-qa-table th{background:#f9fafb;padding:8px 10px;font-weight:700;color:#6b7280;text-align:left;border-bottom:1px solid #e5e7eb;white-space:nowrap}
+.psp-qa-table th:nth-child(1){width:52px;text-align:center}
+.psp-qa-table th:nth-child(2),.psp-qa-table th:nth-child(3){width:auto}
+.psp-qa-table th:nth-child(4){width:70px;text-align:center}
+.psp-qa-table th:nth-child(5){width:60px;text-align:center}
+.psp-qa-table td{padding:8px 10px;border-bottom:1px solid #f3f4f6;vertical-align:top;color:#374151}
+.psp-qa-table td:nth-child(1){text-align:center;font-weight:700;color:#6b7280}
+.psp-qa-table td:nth-child(4){text-align:center;font-weight:700}
+.psp-qa-table td:nth-child(5){text-align:center}
+.psp-qa-table tr.psp-row-risk td{background:#fef2f2}
+.psp-qa-table tr.psp-row-risk td:nth-child(3){color:#991b1b;font-weight:600}
+.psp-risk-check{color:#ef4444;font-size:15px}
+.psp-safe-check{color:#d1d5db;font-size:14px}
+.psp-close{position:absolute;top:14px;right:16px;background:none;border:none;cursor:pointer;color:#9ca3af;font-size:18px;line-height:1}
+.psp-close:hover{color:#374151}
 </style>
 </head>
 <body>
@@ -904,7 +979,7 @@ tailwind.config = {
         </div>
         <div class="rc" id="role-admin" onclick="selectRole('admin')">
           <div class="rc-t">관리자</div>
-          <div class="rc-s">팀장+ · 정재현</div>
+          <div class="rc-s">팀장+ · 김밀당</div>
         </div>
       </div>
       <button class="lb-btn" onclick="login()">로그인</button>
@@ -960,7 +1035,7 @@ tailwind.config = {
         <div class="nav-item" data-page="t-students-record"><i class="ti ti-folder-open"></i>학적 관리</div>
         <div class="nav-div"></div>
         <div class="sb-sec">프로세스</div>
-        <div class="nav-item" data-page="t-process"><iconify-icon icon="solar:graduation-cap-bold-duotone"></iconify-icon>개강 프로세스</div>
+        <div class="nav-item" data-page="t-process"><iconify-icon icon="solar:square-academic-cap-bold-duotone"></iconify-icon>개강 프로세스</div>
         <div class="nav-item" data-page="t-dorae"><iconify-icon icon="solar:calendar-bold-duotone"></iconify-icon>도래자 프로세스</div>
         <div class="nav-item" data-page="t-naeshin"><iconify-icon icon="solar:document-text-bold-duotone"></iconify-icon>내신 프로세스</div>
         <div class="nav-div"></div>
@@ -973,8 +1048,9 @@ tailwind.config = {
       </nav>
       <nav id="admin-menu" style="display:none">
         <div class="sb-sec">본부 현황</div>
-        <div class="nav-item" data-page="a-bonbu"><i class="ti ti-chart-pie"></i>수학본부 대시보드</div>
+        <div class="nav-item" data-page="a-bonbu"><i class="ti ti-chart-pie"></i>수학온택트본부 현황</div>
         <div class="nav-item" data-page="a-sil"><i class="ti ti-building"></i>실별 현황</div>
+        <div class="nav-item" data-page="a-eval"><i class="ti ti-microphone-2"></i>상담 평가</div>
         <div class="nav-div"></div>
         <div class="sb-sec">팀별 관리</div>
         <div class="nav-item tm-nav" data-page="a-team" data-team="초등팀" onclick="goTmTeam('초등팀')"><i class="ti ti-users"></i>초등팀</div>
@@ -991,7 +1067,6 @@ tailwind.config = {
         <div class="nav-item" data-page="a-teacher"><i class="ti ti-user-check"></i>선생님 현황</div>
         <div class="nav-div"></div>
         <div class="sb-sec">분석 · 관리</div>
-        <div class="nav-item" data-page="a-eval"><i class="ti ti-chart-bar"></i>평가 분석</div>
         <div class="nav-item" data-page="a-perm"><i class="ti ti-shield-lock"></i>권한 관리</div>
         <div class="nav-div"></div>
         <div class="sb-sec">IHFB</div>
@@ -1149,6 +1224,86 @@ const AppData = {
     '김리원':{phone:'010-2432-8575',parent:'010-7432-8575'},
     '김예원':{phone:'010-2622-9978',parent:'010-6622-9978'}
   },
+
+  preSurveyData: {
+    questions: [
+      { no:1, q:'이름', type:'text' },
+      { no:2, q:'학년', type:'text' },
+      { no:3, q:'가장 최근 수학 시험 성적은 어느 정도였나요?', short:'최근 수학 시험 성적', type:'single',
+        options:[
+          { label:'95점 이상', risk:false, score:5 },{ label:'90~94점', risk:false, score:5 },
+          { label:'80~89점', risk:false, score:4 },{ label:'70~79점', risk:false, score:3 },
+          { label:'60~69점', risk:false, score:2 },{ label:'50~59점', risk:false, score:2 },
+          { label:'40~49점', risk:false, score:2 },{ label:'30~39점', risk:false, score:4 },
+          { label:'30점 미만', risk:false, score:5 },
+          { label:'최근 시험을 보지 않았어요', risk:false, score:3 },
+          { label:'기억나지 않아요', risk:false, score:3 }
+        ]
+      },
+      { no:4, q:'지금까지 어떤 방식으로 수학을 공부해왔나요? (중복 선택 가능)', short:'기존 수학 공부 방식', type:'multi',
+        options:[
+          { label:'수학 학원', risk:false, score:3 },{ label:'과외', risk:false, score:2 },
+          { label:'인터넷 강의', risk:false, score:0 },{ label:'혼자 공부', risk:false, score:3 },
+          { label:'학습지', risk:false, score:2 },{ label:'기타 (직접 작성)', risk:false, score:null }
+        ]
+      },
+      { no:5, q:'밀당에서 어떤 수학 과정을 공부하고 싶나요?', short:'희망 수학 과정', type:'text', scoreRule:'심화|고난도 워딩 포함 시 score:2' },
+      { no:6, q:'현재 밀당 외에 병행하고 있는 학원이나 과외가 있나요?', short:'병행 학원·과외 여부', type:'single',
+        options:[
+          { label:'없음', risk:false, score:0 },
+          { label:'있음 (직접 작성)', risk:true, score:5 }
+        ]
+      },
+      { no:7, q:'스스로 온라인 강의 시청이나 문제 풀이를 해본 경험이 있나요?', short:'자기주도 학습 경험', type:'single',
+        options:[
+          { label:'매우 그렇다', risk:false, score:1 },{ label:'어느 정도 그렇다', risk:false, score:2 },
+          { label:'보통이다', risk:false, score:3 },{ label:'거의 그렇지 않다', risk:false, score:4 },
+          { label:'전혀 그렇지 않다', risk:false, score:5 }
+        ]
+      },
+      { no:8, q:'밀당 수업은 선생님과 실시간으로 소통하는 텍스트 채팅 기반으로 진행됩니다. 필요에 따라 Zoom을 활용한 학습 관리 신청도 가능합니다. 해당 내용을 확인했나요?', short:'수업 방식 확인 여부', type:'single',
+        options:[
+          { label:'네, 확인했습니다.', risk:false, score:0 },
+          { label:'아니요, 처음 알았습니다.', risk:true, score:5 }
+        ]
+      },
+      { no:9, q:'밀당 PT를 통해 가장 기대하는 것은 무엇인가요? (중복 선택 가능)', short:'기대하는 점', type:'multi',
+        options:[
+          { label:'수학 성적 향상', risk:false, score:2 },{ label:'공부 습관 형성', risk:false, score:1 },
+          { label:'꾸준한 숙제 및 학습 관리', risk:false, score:1 },{ label:'자기주도학습 능력 향상', risk:false, score:0 },
+          { label:'시험 대비', risk:false, score:3 },{ label:'어려운 문제 해결 능력 향상', risk:false, score:2 },
+          { label:'공부 동기 부여', risk:false, score:1 },{ label:'선생님과의 소통', risk:false, score:2 },
+          { label:'기타 (직접 작성)', risk:false, score:null }
+        ]
+      },
+      { no:10, q:'담당 선생님께 요청사항이나 하고 싶은 말이 있다면 자유롭게 작성해 주세요.', short:'선생님께 요청사항', type:'text', score:0 }
+    ],
+    responses: {
+      's1': {
+        answers: [
+          { no:1, ans:'김민서' },
+          { no:2, ans:'고1' },
+          { no:3, ans:'30점 미만', risk:false, score:5 },
+          { no:4, ans:['수학 학원'], risk:false, score:3 },
+          { no:5, ans:'기본기 다지기', risk:false, score:0 },
+          { no:6, ans:'있음 (수학학원)', risk:true, score:5 },
+          { no:7, ans:'거의 그렇지 않다', risk:false, score:4 },
+          { no:8, ans:'아니요, 처음 알았습니다.', risk:true, score:5 },
+          { no:9, ans:['수학 성적 향상','시험 대비'], risk:false, score:5 },
+          { no:10, ans:'꼼꼼히 관리해주세요' }
+        ],
+        riskCount: 2,
+        totalScore: 27,
+        level: '위험'
+      },
+      's2': {
+        answers: [],
+        riskCount: 0,
+        totalScore: 0,
+        level: null
+      }
+    }
+  },
 };
 
 // 하위 호환 별칭 — 기존 코드가 그대로 동작 (AppData와 동일 참조)
@@ -1244,7 +1399,7 @@ async function login(){
     // Mock: 역할 선택만으로 로그인 (기존 동작 유지)
     sessionStorage.setItem('auth_token','mock_token_'+role);
     sessionStorage.setItem('auth_role',role);
-    sessionStorage.setItem('auth_name', role==='admin'?'정재현':'김밀당');
+    sessionStorage.setItem('auth_name','김밀당');
     applyLoginState(role);
     return;
   }
@@ -1274,10 +1429,10 @@ function applyLoginState(r){
   $('#admin-menu').style.display=admin?'block':'none';
   $('#tn-badge').textContent=admin?'관리자':'선생님';
   $('#tn-badge').classList.toggle('admin',admin);
-  $('#tn-name').textContent=admin?'정재현':'김밀당';
+  $('#tn-name').textContent='김밀당';
   $('#tn-av').textContent=admin?'정':'김';
   $('#tn-role').textContent=admin?'관리자 · 본부장':'B팀 · 선생님';
-  $('#sb-name').textContent=admin?'정재현':'김밀당';
+  $('#sb-name').textContent='김밀당';
   $('#sb-role').textContent=admin?'관리자 · 본부장':'선생님 · B팀';
   go(admin?'a-bonbu':'t-home');
   setTimeout(updateNavBadges,50);
@@ -1292,6 +1447,7 @@ function openSidebar(){const sb=$('#sidebar'),ov=$('#sb-overlay');if(sb)sb.class
 function closeSidebar(){const sb=$('#sidebar'),ov=$('#sb-overlay');if(sb)sb.classList.remove('open');if(ov)ov.classList.remove('show');}
 
 function go(id){
+  if(id==='a-eval') window._evalProcFilter=window._evalProcFilter||'전체';
   $$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.page===id));
   if(id==='a-team'){ $$('.tm-nav').forEach(x=>x.classList.toggle('active',x.dataset.team===tmState.team)); }
   $('#content').innerHTML=pages[id]?pages[id]():'<div style="padding:40px;color:#9ca3af">준비 중입니다.</div>';
@@ -1360,6 +1516,92 @@ function VCHART(title, labels, values, colors, unit='%'){
   const yLines=[0,20,40,60,80,100].map(v=>`<line x1="${PL}" y1="${yScale(v)}" x2="${W-PR}" y2="${yScale(v)}" stroke="#f3f4f6" stroke-width="1"/>`).join('');
   return PANEL(title,`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:${H}px">${yLines}${bars}</svg>`);
 }
+function GROUPED_VCHART(title, labels, leftValues, rightValues, leftLabel='PT 수', rightLabel='1인 평균 관리 학생수'){
+  const W=440, H=178, PL=16, PR=12, PT=34, PB=34;
+  const n=labels.length;
+  const gap=(W-PL-PR)/n;
+  const barW=Math.max(8,Math.floor(gap*0.24));
+  const maxV=Math.max(100,...leftValues,...rightValues)*1.12;
+  const yScale=(v)=>PT+(H-PT-PB)*(1-v/maxV);
+  const bars=labels.map((l,i)=>{
+    const lx=PL+i*gap+(gap-barW*2-5)/2;
+    const rx=lx+barW+5;
+    const lv=leftValues[i]||0, rv=rightValues[i]||0;
+    const lh=H-PT-PB-yScale(lv)+PT, rh=H-PT-PB-yScale(rv)+PT;
+    return `<rect x="${lx}" y="${yScale(lv)}" width="${barW}" height="${Math.max(lh,2)}" rx="3" fill="#3182f6" opacity="0.86"/>
+<rect x="${rx}" y="${yScale(rv)}" width="${barW}" height="${Math.max(rh,2)}" rx="3" fill="#f59e0b" opacity="0.86"/>
+<text x="${lx+barW/2}" y="${yScale(lv)-5}" text-anchor="middle" font-size="9" font-weight="800" fill="#3182f6">${lv}</text>
+<text x="${rx+barW/2}" y="${yScale(rv)-5}" text-anchor="middle" font-size="9" font-weight="800" fill="#f59e0b">${rv}</text>
+<text x="${PL+i*gap+gap/2}" y="${H-5}" text-anchor="middle" font-size="9" fill="#9ca3af">${l.replace(/실$/,'').replace(/B2B사업/,'B2B')}</text>`;
+  }).join('');
+  const yLines=[0,.25,.5,.75,1].map(p=>`<line x1="${PL}" y1="${PT+(H-PT-PB)*p}" x2="${W-PR}" y2="${PT+(H-PT-PB)*p}" stroke="#f3f4f6" stroke-width="1"/>`).join('');
+  const legend=`<g transform="translate(${PL},12)">
+    <rect x="0" y="0" width="8" height="8" rx="2" fill="#3182f6"/><text x="12" y="8" font-size="10" fill="#4b5563">${leftLabel}</text>
+    <rect x="82" y="0" width="8" height="8" rx="2" fill="#f59e0b"/><text x="94" y="8" font-size="10" fill="#4b5563">${rightLabel}</text>
+  </g>`;
+  return PANEL(title,`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:${H}px">${yLines}${legend}${bars}</svg>`);
+}
+function VCHART_LINE_OVERLAY(title, labels, barValues, lineValues, barLabel='신규전액환불률', lineLabel='개강수'){
+  const W=440, H=178, PL=28, PR=18, PT=36, PB=34;
+  const n=labels.length;
+  const gap=(W-PL-PR)/n;
+  const barW=Math.floor(gap*0.46);
+  const maxBar=Math.max(12,...barValues)*1.18;
+  const maxLine=Math.max(10,...lineValues)*1.18;
+  const yBar=(v)=>PT+(H-PT-PB)*(1-v/maxBar);
+  const yLine=(v)=>PT+(H-PT-PB)*(1-v/maxLine);
+  const px=(i)=>PL+i*gap+gap/2;
+  const bars=labels.map((l,i)=>{
+    const v=barValues[i]||0;
+    const x=px(i)-barW/2;
+    const bh=H-PT-PB-yBar(v)+PT;
+    const c=v<=9?'#10b981':v<=12?'#f59e0b':'#ef4444';
+    return `<rect x="${x}" y="${yBar(v)}" width="${barW}" height="${Math.max(bh,2)}" rx="3" fill="${c}" opacity="0.82"/>
+<text x="${px(i)}" y="${yBar(v)-5}" text-anchor="middle" font-size="9" font-weight="800" fill="${c}">${v}%</text>
+<text x="${px(i)}" y="${H-5}" text-anchor="middle" font-size="9" fill="#9ca3af">${l.replace(/실$/,'').replace(/B2B사업/,'B2B')}</text>`;
+  }).join('');
+  const pts=lineValues.map((v,i)=>`${px(i)},${yLine(v)}`).join(' ');
+  const dots=lineValues.map((v,i)=>`<circle cx="${px(i)}" cy="${yLine(v)}" r="3.5" fill="#6366f1" stroke="#fff" stroke-width="2"/><text x="${px(i)}" y="${yLine(v)-8}" text-anchor="middle" font-size="9" font-weight="800" fill="#6366f1">${v}</text>`).join('');
+  const yLines=[0,.25,.5,.75,1].map(p=>`<line x1="${PL}" y1="${PT+(H-PT-PB)*p}" x2="${W-PR}" y2="${PT+(H-PT-PB)*p}" stroke="#f3f4f6" stroke-width="1"/>`).join('');
+  const legend=`<g transform="translate(${PL},12)">
+    <rect x="0" y="0" width="8" height="8" rx="2" fill="#f97316"/><text x="12" y="8" font-size="10" fill="#4b5563">${barLabel}</text>
+    <rect x="96" y="0" width="8" height="8" rx="2" fill="#6366f1"/><text x="108" y="8" font-size="10" fill="#4b5563">${lineLabel}</text>
+  </g>`;
+  return PANEL(title,`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:${H}px">${yLines}${legend}${bars}<polyline points="${pts}" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${dots}</svg>`);
+}
+function TEAM_MEMBER_KPI_CHART(title, labels, retentionVals, extendVals, refundVals){
+  const W=520, H=210, PL=34, PR=18, PT=40, PB=38;
+  const n=labels.length;
+  const gap=(W-PL-PR)/n;
+  const barW=Math.max(10,Math.floor(gap*0.22));
+  const maxBar=Math.max(100,...retentionVals,...extendVals);
+  const maxRefund=Math.max(12,...refundVals)*1.15;
+  const yBar=(v)=>PT+(H-PT-PB)*(1-v/maxBar);
+  const yRefund=(v)=>PT+(H-PT-PB)*(1-v/maxRefund);
+  const px=(i)=>PL+i*gap+gap/2;
+  const bars=labels.map((l,i)=>{
+    const rv=retentionVals[i]||0, ev=extendVals[i]||0, fv=refundVals[i]||0;
+    const rx=px(i)-barW-3, ex=px(i)+3;
+    const rh=H-PT-PB-yBar(rv)+PT, eh=H-PT-PB-yBar(ev)+PT;
+    return `<rect x="${rx}" y="${yBar(rv)}" width="${barW}" height="${Math.max(rh,2)}" rx="3" fill="#10b981" opacity="0.86"/>
+<rect x="${ex}" y="${yBar(ev)}" width="${barW}" height="${Math.max(eh,2)}" rx="3" fill="#3182f6" opacity="0.86"/>
+<text x="${rx+barW/2}" y="${yBar(rv)-5}" text-anchor="middle" font-size="9" font-weight="800" fill="#10b981">${rv}%</text>
+<text x="${ex+barW/2}" y="${yBar(ev)-5}" text-anchor="middle" font-size="9" font-weight="800" fill="#3182f6">${ev}%</text>
+<text x="${px(i)}" y="${H-6}" text-anchor="middle" font-size="10" fill="#9ca3af">${l}</text>`;
+  }).join('');
+  const pts=refundVals.map((v,i)=>`${px(i)},${yRefund(v)}`).join(' ');
+  const dots=refundVals.map((v,i)=>{
+    const c=v<=7?'#10b981':v<=9?'#f59e0b':'#ef4444';
+    return `<circle cx="${px(i)}" cy="${yRefund(v)}" r="4" fill="${c}" stroke="#fff" stroke-width="2"/><text x="${px(i)}" y="${yRefund(v)-9}" text-anchor="middle" font-size="9" font-weight="900" fill="${c}">${v}%</text>`;
+  }).join('');
+  const yLines=[0,.25,.5,.75,1].map(p=>`<line x1="${PL}" y1="${PT+(H-PT-PB)*p}" x2="${W-PR}" y2="${PT+(H-PT-PB)*p}" stroke="#f3f4f6" stroke-width="1"/>`).join('');
+  const legend=`<g transform="translate(${PL},14)">
+    <rect x="0" y="0" width="8" height="8" rx="2" fill="#10b981"/><text x="12" y="8" font-size="10" fill="#4b5563">재수강률</text>
+    <rect x="68" y="0" width="8" height="8" rx="2" fill="#3182f6"/><text x="80" y="8" font-size="10" fill="#4b5563">연장률</text>
+    <rect x="126" y="0" width="8" height="8" rx="2" fill="#ef4444"/><text x="138" y="8" font-size="10" fill="#4b5563">신규전액환불률</text>
+  </g>`;
+  return PANEL(title,`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:${H}px">${yLines}${legend}${bars}<polyline points="${pts}" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${dots}</svg>`);
+}
 const LINE=(labels,values,color='#6366f1',unit='%')=>{
   const W=480,H=120,PL=36,PR=12,PT=12,PB=28;
   const cw=W-PL-PR,ch=H-PT-PB;
@@ -1406,6 +1648,14 @@ function openModal(title,body){
 function closeModal(){
   $('#detail-modal').classList.remove('show');
   $('#detail-modal').setAttribute('aria-hidden','true');
+}
+function togglePanel(id){
+  const b=document.getElementById(id);
+  if(!b)return;
+  const collapsed=b.style.display==='none';
+  b.style.display=collapsed?'':'none';
+  const btn=document.querySelector('[data-panel-toggle="'+id+'"]');
+  if(btn)btn.textContent=collapsed?'접기':'펼치기';
 }
 function showWorkDetail(key){
   const d=workDetails[key];
@@ -1523,28 +1773,33 @@ const openingActionDetails = {
   }
 };
 function openingSelectAction(el){
+  if(el.dataset.action==='preSurvey'){
+    openPreSurveyPopup(el.dataset.student);
+    return;
+  }
   $$('.process-cell').forEach(x=>x.classList.remove('on'));
   el.classList.add('on');
   const d=openingActionDetails[el.dataset.action];
   if(!d) return;
-  $('#od-title').textContent=d.title;
-  $('#od-meta').textContent=el.dataset.student+' · '+el.dataset.day;
-  const s=$('#od-status'); s.textContent=d.status; s.className='tag '+d.cls;
-  $('#od-rscore').innerHTML=d.riskScore+'<span>점</span>';
-  $('#od-tscore').innerHTML=d.totalScore+'<span>점 · '+d.level+'</span>';
-  $('#od-body').innerHTML=d.html;
+  document.getElementById('od-title').textContent=d.title;
+  document.getElementById('od-meta').textContent=el.dataset.student+' · '+el.dataset.day;
+  const s=document.getElementById('od-status'); s.textContent=d.status; s.className='tag '+d.cls;
+  document.getElementById('od-rscore').innerHTML=d.riskScore+'<span>점</span>';
+  document.getElementById('od-tscore').innerHTML=d.totalScore+'<span>점 · '+d.level+'</span>';
+  document.getElementById('od-body').innerHTML=d.html;
   openingBindTabs();
+  document.getElementById('actionPopup').classList.add('show');
 }
 function openingSelectStudent(el){
   $$('.process-cell').forEach(x=>x.classList.remove('on'));
-  $('#od-title').textContent='학생 정보';
-  $('#od-meta').textContent=el.dataset.name+' · '+el.dataset.grade+' · '+el.dataset.gen;
-  const s=$('#od-status');
+  document.getElementById('od-title').textContent='학생 정보';
+  document.getElementById('od-meta').textContent=el.dataset.name+' · '+el.dataset.grade+' · '+el.dataset.gen;
+  const s=document.getElementById('od-status');
   s.textContent=el.dataset.risk;
   s.className=el.dataset.risk==='위험군'?'tag r':'tag b';
-  $('#od-rscore').innerHTML='-<span>액션 선택 전</span>';
-  $('#od-tscore').innerHTML=(el.dataset.risk==='위험군'?'11':'4')+'<span>점 · '+el.dataset.risk+'</span>';
-  $('#od-body').innerHTML=
+  document.getElementById('od-rscore').innerHTML='-<span>액션 선택 전</span>';
+  document.getElementById('od-tscore').innerHTML=(el.dataset.risk==='위험군'?'11':'4')+'<span>점 · '+el.dataset.risk+'</span>';
+  document.getElementById('od-body').innerHTML=
     '<div class="grid g2" style="gap:10px;margin-bottom:10px">'+
       '<div class="detail-item"><label>학생명</label><strong>'+el.dataset.name+'</strong></div>'+
       '<div class="detail-item"><label>개강일</label><strong>'+el.dataset.start+'</strong></div>'+
@@ -1554,6 +1809,7 @@ function openingSelectStudent(el){
       '<div class="detail-item"><label>보호자 번호</label><strong>'+lookupContact(el.dataset.name).parent+'</strong></div>'+
     '</div>'+
     '<div class="proc-block"><h4>학생 DB 메모</h4><p>'+el.dataset.note+'</p></div>';
+  document.getElementById('actionPopup').classList.add('show');
 }
 function openingBindTabs(){
   $$('#od-body .answer-tab').forEach(t=>t.addEventListener('click',()=>{
@@ -1566,8 +1822,22 @@ function openingBindTabs(){
   }));
 }
 function openingInit(){
-  const cell=document.querySelector('.process-cell.on');
-  if(cell) openingSelectAction(cell);
+  // 초기 진입 시 팝업 자동 오픈하지 않음 — 셀 클릭으로만 열림
+  const ap=document.getElementById('actionPopup'); if(ap) ap.classList.remove('show');
+  const sp=document.getElementById('preSurveyPopup'); if(sp) sp.classList.remove('show');
+}
+function filterProcessRows(btn,key){
+  $$('.filter-chip').forEach(b=>b.classList.toggle('on',b===btn));
+  $$('.proc-row').forEach(tr=>{
+    const day=parseInt(tr.dataset.daynum,10);
+    const risk=tr.dataset.rowrisk;
+    let show=true;
+    if(key==='scheduled') show=day===0;
+    else if(key==='d1') show=day>=1&&day<=3;
+    else if(key==='d4') show=day>=4&&day<=10;
+    else if(key==='risk') show=risk==='위험군';
+    tr.style.display=show?'':'none';
+  });
 }
 function smSelectOpeningRow(row){
   $$('.student-row-sm').forEach(r=>r.classList.remove('selected'));
@@ -1832,27 +2102,35 @@ function evalCoaching(i,btn){
 
 // ── 사내 게시판 자유 게시글 (실명 작성) ──
 let boardFreePosts=[
-  {name:'이서윤',team:'고등1팀',time:'06.11 14:20',title:'개강 첫주 컨택 꿀팁 공유',body:'개강 2~3일차에 학부모께 “수업 적응 잘 하고 있다”는 짧은 메시지를 먼저 보내면 첫 상담 분위기가 훨씬 부드러워집니다.'},
-  {name:'박지훈',team:'B팀',time:'06.10 09:05',title:'환불 방어 멘트 모음',body:'환불 문의가 들어오면 바로 방어하지 말고, 먼저 학생의 학습 변화 데이터를 보여드리며 “지금이 가장 중요한 시기”라는 점을 짚는 게 효과적이었습니다.'},
+  {id:'fp1',name:'이서윤',team:'고등1팀',time:'06.11 14:20',title:'개강 첫주 컨택 꿀팁 공유',body:'개강 2~3일차에 학부모께 “수업 적응 잘 하고 있다”는 짧은 메시지를 먼저 보내면 첫 상담 분위기가 훨씬 부드러워집니다.'},
+  {id:'fp2',name:'박지훈',team:'B팀',time:'06.10 09:05',title:'환불 방어 멘트 모음',body:'환불 문의가 들어오면 바로 방어하지 말고, 먼저 학생의 학습 변화 데이터를 보여드리며 “지금이 가장 중요한 시기”라는 점을 짚는 게 효과적이었습니다.'},
 ];
+let _fpIdCounter=3;
 function tbRenderFreeList(){
-  return boardFreePosts.map(p=>`<div class="tb-issue" style="cursor:default">
+  return boardFreePosts.map(p=>`<div class="tb-issue" style="cursor:default;display:flex;align-items:flex-start;gap:10px">
     <div style="display:flex;align-items:flex-start;gap:11px;flex:1;min-width:0">
       <div class="tb-winner-av" style="width:34px;height:34px;font-size:13px;box-shadow:none;background:#eef2f7;color:#4f5965;flex-shrink:0">${p.name[0]}</div>
-      <div style="min-width:0"><div class="tb-issue-title">${p.title}</div><div class="tb-issue-desc">${p.body}</div>
+      <div style="min-width:0;flex:1"><div class="tb-issue-title">${p.title}</div><div class="tb-issue-desc">${p.body}</div>
       <div style="font-size:11px;color:#b0b8c1;margin-top:5px;font-weight:600">${p.name} · ${p.team} · ${p.time}</div></div>
     </div>
+    ${role==='admin'?`<button onclick="deleteFreePost('${p.id}')" style="flex-shrink:0;min-height:26px;border:1px solid #fca5a5;border-radius:8px;padding:0 9px;background:#FEF2F2;color:#ef4444;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;align-self:flex-start;margin-top:2px">삭제</button>`:''}
   </div>`).join('');
 }
+function deleteFreePost(id){
+  boardFreePosts=boardFreePosts.filter(p=>p.id!==id);
+  const list=document.getElementById('tb-free-list');
+  if(list)list.innerHTML=tbRenderFreeList();
+  showToast('게시글이 삭제되었습니다');
+}
 function tbFreePost(){
-  const admin=role==='admin';const me=admin?'정재현':'김밀당';const meTeam=admin?'본부':'B팀';
+  const admin=role==='admin';const me='김밀당';const meTeam=admin?'본부':'B팀';
   const t=(document.getElementById('tb-free-title')||{}).value||'';
   const b=(document.getElementById('tb-free-body')||{}).value||'';
   if(!t.trim()){showToast('제목을 입력해 주세요');return;}
   const now=new Date();
   const mm=(now.getMonth()+1+'').padStart(2,'0'),dd=(now.getDate()+'').padStart(2,'0');
   const hh=(now.getHours()+'').padStart(2,'0'),mi=(now.getMinutes()+'').padStart(2,'0');
-  boardFreePosts.unshift({name:me,team:meTeam,time:mm+'.'+dd+' '+hh+':'+mi,title:t.trim(),body:b.trim()||'(내용 없음)'});
+  boardFreePosts.unshift({id:'fp'+(_fpIdCounter++),name:me,team:meTeam,time:mm+'.'+dd+' '+hh+':'+mi,title:t.trim(),body:b.trim()||'(내용 없음)'});
   const list=document.getElementById('tb-free-list');
   if(list)list.innerHTML=tbRenderFreeList();
   document.getElementById('tb-free-title').value='';
@@ -1986,7 +2264,7 @@ function computeBonbuKPIs(){
 // 로그인 역할에 맞는 선생님 데이터 반환
 function getMyTeacherStats(){
   const T=buildTeacherRollup();
-  const myName=role==='admin'?'정재현':'유민지';
+  const myName=role==='admin'?'김밀당':'유민지';
   return T.find(t=>t.name===myName)||T[0]||{name:'—',room:'—',team:'—',total:0,renewal:0,rr:0,refund:0,rfr:0,amt:0,stt:'0.0'};
 }
 // 실 이름으로 ROOM_STATS_DB 조회
@@ -2287,7 +2565,7 @@ function filterArchive(value){
   });
 }
 
-// ── 신규PT 개강 트래킹 달력 ──
+// ── 개강 프로세스 일별 현황 달력 ──
 // 팀 구조: 수학온택트본부 산하
 // 초등팀 / 중등1A팀 / 중등2A팀 / 중등3A팀 / 고등1A팀 / 고등2A팀 / 고등3A팀 / 주말팀 / B2B사업팀
 const PT_TEAMS = ['초등팀','중등1A팀','중등2A팀','중등3A팀','고등1A팀','고등2A팀','고등3A팀','주말팀','B2B사업팀'];
@@ -2608,47 +2886,47 @@ function openPTCalDetail(key){
 // ── 추이 데이터 & 렌더 ──
 const TREND_DB = {
   bonbu:{
-    weekly:  {labels:['3주전','2주전','지난주','이번주'], rerenew:[71,72,73,74], extend:[90,90,91,91], refund:[3.3,3.2,3.2,3.1]},
+    weekly:  {labels:['6월 1주차','6월 2주차','6월 3주차','6월 4주차'], rerenew:[71,72,73,74], extend:[90,90,91,91], refund:[3.3,3.2,3.2,3.1]},
     monthly: {labels:['1월','2월','3월','4월','5월','6월'], rerenew:[68,70,71,72,73,74], extend:[88,89,90,90,91,91], refund:[4.1,3.9,3.7,3.5,3.3,3.1]},
     quarterly:{labels:['25Q3','25Q4','26Q1','26Q2'], rerenew:[64,67,71,74], extend:[86,88,90,91], refund:[4.5,4.0,3.7,3.1]},
   },
   '(수학)초등실':{
-    weekly:  {labels:['3주전','2주전','지난주','이번주'], rerenew:[76,77,78,79], extend:[93,94,94,95], refund:[2.1,2.0,2.0,1.9]},
+    weekly:  {labels:['6월 1주차','6월 2주차','6월 3주차','6월 4주차'], rerenew:[76,77,78,79], extend:[93,94,94,95], refund:[2.1,2.0,2.0,1.9]},
     monthly: {labels:['1월','2월','3월','4월','5월','6월'], rerenew:[74,75,76,77,78,79], extend:[92,93,93,94,94,95], refund:[2.3,2.2,2.1,2.1,2.0,1.9]},
     quarterly:{labels:['25Q3','25Q4','26Q1','26Q2'], rerenew:[70,73,76,79], extend:[90,92,93,95], refund:[2.6,2.4,2.1,1.9]},
   },
   '(수학)중등1실':{
-    weekly:  {labels:['3주전','2주전','지난주','이번주'], rerenew:[73,74,75,76], extend:[91,92,92,93], refund:[2.3,2.2,2.2,2.1]},
+    weekly:  {labels:['6월 1주차','6월 2주차','6월 3주차','6월 4주차'], rerenew:[73,74,75,76], extend:[91,92,92,93], refund:[2.3,2.2,2.2,2.1]},
     monthly: {labels:['1월','2월','3월','4월','5월','6월'], rerenew:[71,72,73,74,75,76], extend:[90,91,91,92,92,93], refund:[2.5,2.4,2.3,2.3,2.2,2.1]},
     quarterly:{labels:['25Q3','25Q4','26Q1','26Q2'], rerenew:[67,70,73,76], extend:[88,90,92,93], refund:[2.8,2.6,2.3,2.1]},
   },
   '(수학)중등2실':{
-    weekly:  {labels:['3주전','2주전','지난주','이번주'], rerenew:[71,72,73,74], extend:[89,90,90,91], refund:[2.5,2.4,2.4,2.3]},
+    weekly:  {labels:['6월 1주차','6월 2주차','6월 3주차','6월 4주차'], rerenew:[71,72,73,74], extend:[89,90,90,91], refund:[2.5,2.4,2.4,2.3]},
     monthly: {labels:['1월','2월','3월','4월','5월','6월'], rerenew:[69,70,71,72,73,74], extend:[88,89,89,90,90,91], refund:[2.7,2.6,2.5,2.4,2.4,2.3]},
     quarterly:{labels:['25Q3','25Q4','26Q1','26Q2'], rerenew:[65,68,71,74], extend:[86,88,90,91], refund:[3.0,2.8,2.5,2.3]},
   },
   '(수학)중등3실':{
-    weekly:  {labels:['3주전','2주전','지난주','이번주'], rerenew:[69,70,71,72], extend:[87,88,88,89], refund:[2.7,2.6,2.6,2.5]},
+    weekly:  {labels:['6월 1주차','6월 2주차','6월 3주차','6월 4주차'], rerenew:[69,70,71,72], extend:[87,88,88,89], refund:[2.7,2.6,2.6,2.5]},
     monthly: {labels:['1월','2월','3월','4월','5월','6월'], rerenew:[67,68,69,70,71,72], extend:[86,87,87,88,88,89], refund:[2.9,2.8,2.7,2.6,2.6,2.5]},
     quarterly:{labels:['25Q3','25Q4','26Q1','26Q2'], rerenew:[63,66,69,72], extend:[84,86,88,89], refund:[3.2,3.0,2.7,2.5]},
   },
   '(수학)고등1실':{
-    weekly:  {labels:['3주전','2주전','지난주','이번주'], rerenew:[72,73,74,75], extend:[90,91,91,92], refund:[2.4,2.3,2.3,2.2]},
+    weekly:  {labels:['6월 1주차','6월 2주차','6월 3주차','6월 4주차'], rerenew:[72,73,74,75], extend:[90,91,91,92], refund:[2.4,2.3,2.3,2.2]},
     monthly: {labels:['1월','2월','3월','4월','5월','6월'], rerenew:[70,71,72,73,74,75], extend:[89,90,90,91,91,92], refund:[2.6,2.5,2.4,2.3,2.3,2.2]},
     quarterly:{labels:['25Q3','25Q4','26Q1','26Q2'], rerenew:[66,69,72,75], extend:[87,89,91,92], refund:[2.9,2.7,2.4,2.2]},
   },
   '(수학)고등2실':{
-    weekly:  {labels:['3주전','2주전','지난주','이번주'], rerenew:[70,71,72,73], extend:[88,89,89,90], refund:[2.6,2.5,2.5,2.4]},
+    weekly:  {labels:['6월 1주차','6월 2주차','6월 3주차','6월 4주차'], rerenew:[70,71,72,73], extend:[88,89,89,90], refund:[2.6,2.5,2.5,2.4]},
     monthly: {labels:['1월','2월','3월','4월','5월','6월'], rerenew:[68,69,70,71,72,73], extend:[87,88,88,89,89,90], refund:[2.8,2.7,2.6,2.5,2.5,2.4]},
     quarterly:{labels:['25Q3','25Q4','26Q1','26Q2'], rerenew:[64,67,70,73], extend:[85,87,89,90], refund:[3.1,2.9,2.6,2.4]},
   },
   '(수학)고등3실':{
-    weekly:  {labels:['3주전','2주전','지난주','이번주'], rerenew:[67,68,69,70], extend:[85,86,86,87], refund:[2.9,2.8,2.8,2.7]},
+    weekly:  {labels:['6월 1주차','6월 2주차','6월 3주차','6월 4주차'], rerenew:[67,68,69,70], extend:[85,86,86,87], refund:[2.9,2.8,2.8,2.7]},
     monthly: {labels:['1월','2월','3월','4월','5월','6월'], rerenew:[65,66,67,68,69,70], extend:[84,85,85,86,86,87], refund:[3.1,3.0,2.9,2.8,2.8,2.7]},
     quarterly:{labels:['25Q3','25Q4','26Q1','26Q2'], rerenew:[61,64,67,70], extend:[82,84,86,87], refund:[3.4,3.2,2.9,2.7]},
   },
   '(수학)B2B사업실':{
-    weekly:  {labels:['3주전','2주전','지난주','이번주'], rerenew:[79,80,81,82], extend:[94,95,95,96], refund:[2.0,1.9,1.9,1.8]},
+    weekly:  {labels:['6월 1주차','6월 2주차','6월 3주차','6월 4주차'], rerenew:[79,80,81,82], extend:[94,95,95,96], refund:[2.0,1.9,1.9,1.8]},
     monthly: {labels:['1월','2월','3월','4월','5월','6월'], rerenew:[77,78,79,80,81,82], extend:[93,94,94,95,95,96], refund:[2.2,2.1,2.0,1.9,1.9,1.8]},
     quarterly:{labels:['25Q3','25Q4','26Q1','26Q2'], rerenew:[73,76,79,82], extend:[91,93,95,96], refund:[2.5,2.3,2.0,1.8]},
   },
@@ -2676,10 +2954,23 @@ function renderBonbuTrendsInline(key, period){
   const svg=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:${H}px">${yTicks}${makePath(d.rerenew,'#22c55e')}${makePath(d.extend,'#6366f1')}${makePath(d.refund,'#f97316')}${makeDots(d.rerenew,'#22c55e')}${makeDots(d.extend,'#6366f1')}${makeDots(d.refund,'#f97316')}${makeLabels(d.rerenew,'#22c55e')}${makeLabels(d.extend,'#6366f1')}${makeLabels(d.refund,'#f97316')}${xLabels}${legend}</svg>`;
   return PANEL('KPI 추이',svg);
 }
+function renderPTTrendInline(period){
+  const data={
+    weekly:{labels:['6월 1주차','6월 2주차','6월 3주차','6월 4주차'],pt:[982,1046,1118,1175]},
+    monthly:{labels:['1월','2월','3월','4월','5월','6월'],pt:[3520,3710,3890,4025,4210,4385]},
+    quarterly:{labels:['25Q3','25Q4','26Q1','26Q2'],pt:[9820,10540,11280,12620]},
+  }[period]||{};
+  const labels=data.labels||['1월','2월','3월','4월','5월','6월'];
+  const vals=data.pt||[3520,3710,3890,4025,4210,4385];
+  return PANEL('PT수 추이',LINE(labels,vals,'#3182f6','명'));
+}
+function renderBonbuTrendPanels(key, period){
+  return `<div class="grid g2" style="margin-bottom:16px">${renderPTTrendInline(period)}${renderBonbuTrendsInline(key,period)}</div>`;
+}
 function renderBonbuTrends(period){
   const key = document.getElementById('bonbu-scope')?.value || 'bonbu';
   const el = document.getElementById('bonbu-trends');
-  if(el) el.innerHTML = renderBonbuTrendsInline(key, period);
+  if(el) el.innerHTML = renderBonbuTrendPanels(key, period);
 }
 
 // ── 실/팀 마스터 데이터 ──
@@ -3117,12 +3408,7 @@ function buildOpeningProcessAdmin(scopeName){
       ['진단고사',TAG('3건','b'),TAG('진행','b'),TAG('이번달','b')],
     ]))}
   </div>`;
-  const actionCols=['개강전설문','진단고사','개강후설문','1일차공유','위험군컨택'];
-  const studentRows=studentDB.slice(0,8).map(s=>{
-    const cells=actionCols.map(()=>Math.random()>0.35?TAG('완료','g'):TAG('미완','r'));
-    return [s.name,TAG(s.grade,'n'),s.status,...cells];
-  });
-  const bottomSection=PANEL('학생별 개강프로세스 기록',TABLE(['학생','학년','상태',...actionCols],studentRows));
+  const bottomSection=buildOpeningProcessDrilldown(scopeName);
   return `<section class="panel" style="margin-bottom:16px"><div class="panel-h"><span>전반적인 액션 수행률</span>${TAG(scopeName,'b')}</div><div class="panel-b">${stepBar}${topKpis}</div></section>`+midSection+bottomSection;
 }
 function buildDoraeProcessAdmin(scopeName){
@@ -3251,14 +3537,16 @@ function buildSilDashboardNew(){
   const rfrVals=rooms.map(r=>ROOM_STATS_DB[r].rfr);
   const churnVals=rooms.map(r=>Math.round(((ROOM_STATS_DB[r].total-ROOM_STATS_DB[r].renewal)/ROOM_STATS_DB[r].total)*100));
   const ptVals=rooms.map(r=>Math.round(ROOM_STATS_DB[r].total/3.7));
+  const openVals=rooms.map((r,i)=>Math.round(ptVals[i]*0.18+(i%3)*4));
+  const avgStudentVals=rooms.map((r,i)=>Math.round((ROOM_STATS_DB[r].total/(Object.keys(TEAM_STATS_DB[r]||{}).length||2))/3.2));
   const chartGrid=`<div class="grid g2" style="margin-bottom:16px">
     ${VCHART('재수강률 (%)',labels,rrVals,colorFn(rrVals,76,70))}
-    ${VCHART('신규전액환불률 (%)',labels,rfrVals,colorFn(rfrVals.map(v=>-v),-9,-12).map((c,i)=>rfrVals[i]<=9?'#10b981':rfrVals[i]<=12?'#f59e0b':'#ef4444'))}
+    ${VCHART_LINE_OVERLAY('신규전액환불률 및 개강수',labels,rfrVals,openVals,'신규전액환불률','개강수')}
     ${VCHART('이탈률 (%)',labels,churnVals,churnVals.map(v=>v<=20?'#10b981':v<=28?'#f59e0b':'#ef4444'))}
-    ${VCHART('PT 수 (상대)',labels,ptVals,ptVals.map(()=>'#3182f6'),'명')}
+    ${GROUPED_VCHART('PT 수 및 1인 평균 관리 학생수',labels,ptVals,avgStudentVals,'PT 수','1인 평균 관리 학생수')}
   </div>`;
   // Accordion drilldown
-  let accHtml='<section class="panel" style="margin-bottom:16px"><div class="panel-h"><span style="font-weight:900">실별 상세 드릴다운</span><span style="font-size:12px;color:var(--sub)">실 클릭 → 팀 확인 → 팀 클릭 → 선생님 상세</span></div><div class="panel-b" style="padding:12px">';
+  let accHtml='<section class="panel" style="margin-bottom:16px"><div class="panel-h"><span style="font-weight:900">실별 상세</span><span style="font-size:12px;color:var(--sub)">실 클릭 → 팀 확인 → 팀 클릭 → 선생님 상세</span></div><div class="panel-b" style="padding:12px">';
   Object.keys(ROOM_STATS_DB).forEach(room=>{
     const d=ROOM_STATS_DB[room];
     accHtml+='<div class="accordion-room"><div class="accordion-head" onclick="silToggleRoom(\''+room+'\')">'+
@@ -3284,6 +3572,68 @@ function buildSilDashboardNew(){
   accHtml+='</div></section>';
   const rawHtml='<section class="panel"><div class="panel-h"><span style="font-weight:900">Raw DB</span><button class="btn" style="min-height:28px;font-size:11px" onclick="downloadCSV()">CSV 다운로드</button></div><div class="panel-b" style="padding:12px"><div id="sil-rawdb-table">'+buildSilRawTable()+'</div></div></section>';
   return chartGrid+accHtml+rawHtml;
+}
+
+function getProcessTeams(room){
+  const normalized='(수학)'+room;
+  const fromMaster=SIL_TEAMS[normalized]||[];
+  const fromStats=Object.keys(TEAM_STATS_DB[room]||{});
+  const teams=[...new Set([...fromMaster,...fromStats])].filter(Boolean);
+  if(teams.length)return teams;
+  return [room.replace('실','A팀'),room.replace('실','B팀')];
+}
+function buildProcessTeacherRows(room,team){
+  const teachers=TEAM_STATS_DB[room]?.[team]||{};
+  const names=Object.keys(teachers).length?Object.entries(teachers):[
+    ['김서연',{total:94,rr:76,rfr:7}],
+    ['박지훈',{total:88,rr:73,rfr:10}],
+    ['정하린',{total:82,rr:78,rfr:6}],
+  ];
+  return names.map(([teacher,d],i)=>{
+    const done=Math.max(62,Math.min(97,(d.rr||72)+8-(i*3)));
+    const risk=Math.max(1,Math.round((d.rfr||8)/2));
+    return `<div style="display:grid;grid-template-columns:110px 72px 84px 84px 1fr;gap:8px;align-items:center;padding:9px 4px;border-bottom:1px solid #f3f4f6;font-size:12px">
+      <strong style="color:#191f28">${teacher}</strong>
+      <span class="tag n">${d.total||82}명</span>
+      <span class="tag ${done>=88?'g':done>=75?'o':'r'}">수행률 ${done}%</span>
+      <span class="tag ${risk<=3?'g':risk<=5?'o':'r'}">위험 ${risk}건</span>
+      <div class="bar"><div class="fill ${done>=88?'g':done>=75?'o':'r'}" style="width:${done}%"></div></div>
+    </div>`;
+  }).join('');
+}
+function buildOpeningProcessDrilldown(scope){
+  const rooms=scope==='전체'?Object.keys(ROOM_STATS_DB):[scope];
+  let html='<section class="panel" style="margin-bottom:16px"><div class="panel-h"><span style="font-weight:900">'+(scope==='전체'?'실별 개강프로세스 기록':'팀별 개강프로세스 기록')+'</span><span style="font-size:12px;color:var(--sub)">실 클릭 → 팀 확인 → 팀 클릭 → 팀원 현황</span></div><div class="panel-b" style="padding:12px">';
+  rooms.forEach(room=>{
+    const roomStat=ROOM_STATS_DB[room]||{total:0,rr:0,rfr:0};
+    const teams=getProcessTeams(room);
+    const roomDone=Math.round((roomStat.rr||74)+12-(roomStat.rfr||9)/3);
+    html+='<div class="accordion-room"><div class="accordion-head" onclick="silToggleRoom(\'proc-'+room+'\')">'+
+      '<span>'+room+'</span>'+
+      '<span style="display:flex;gap:8px;align-items:center;font-size:12px;font-weight:700">'+
+      '<span class="tag b">팀 '+teams.length+'개</span>'+
+      '<span class="tag '+(roomDone>=88?'g':roomDone>=75?'o':'r')+'">수행률 '+roomDone+'%</span>'+
+      '<span class="tag '+((roomStat.rfr||0)<=9?'g':(roomStat.rfr||0)<=12?'o':'r')+'">환불방어 '+(100-(roomStat.rfr||9))+'%</span>'+
+      '<span style="color:var(--sub)">▼</span></span></div>'+
+      '<div class="accordion-body" id="acc-proc-'+room+'">';
+    teams.forEach((team,idx)=>{
+      const teamData=TEAM_STATS_DB[room]?.[team];
+      const first=teamData?Object.values(teamData)[0]:null;
+      const done=Math.max(60,Math.min(96,(first?.rr||72)+10-(idx*3)));
+      const risk=Math.max(1,Math.round((first?.rfr||8)/2)+idx);
+      html+='<div class="accordion-room" style="background:#fff"><div class="accordion-head" onclick="silToggleRoom(\'proc-'+room+'-'+team+'\')" style="padding:10px 12px">'+
+        '<span>'+team+'</span>'+
+        '<span style="display:flex;gap:8px;align-items:center;font-size:12px;font-weight:700">'+
+        '<span class="tag n">'+(first?.total||Math.round((roomStat.total||180)/teams.length))+'명</span>'+
+        '<span class="tag '+(done>=88?'g':done>=75?'o':'r')+'">수행률 '+done+'%</span>'+
+        '<span class="tag '+(risk<=3?'g':risk<=5?'o':'r')+'">위험 '+risk+'건</span>'+
+        '<span style="color:var(--blue)">팀원 보기</span></span></div>'+
+        '<div class="accordion-body" id="acc-proc-'+room+'-'+team+'">'+buildProcessTeacherRows(room,team)+'</div></div>';
+    });
+    html+='</div></div>';
+  });
+  html+='</div></section>';
+  return html;
 }
 
 function buildSilOpeningProcess(scope){
@@ -3327,13 +3677,7 @@ function buildSilOpeningProcess(scope){
       ['진단고사',TAG('3건','b'),TAG('진행','b'),TAG('이번달','b')],
     ]))}
   </div>`;
-  // Bottom: 학생별 기록
-  const actionCols=['개강전설문','진단고사','개강후설문','1일차공유','위험군컨택'];
-  const studentRows=studentDB.slice(0,8).map(s=>{
-    const cells=actionCols.map(()=>Math.random()>0.35?TAG('완료','g'):TAG('미완','r'));
-    return [s.name,TAG(s.grade,'n'),s.status,...cells];
-  });
-  const bottomSection=PANEL('학생별 개강프로세스 기록',TABLE(['학생','학년','상태',...actionCols],studentRows));
+  const bottomSection=buildOpeningProcessDrilldown(scope);
   return `<section class="panel" style="margin-bottom:16px"><div class="panel-h"><span>전반적인 액션 수행률</span>${TAG(scope,'b')}</div><div class="panel-b">${stepBar}${topKpis}</div></section>`+midSection+bottomSection;
 }
 function buildSilNaeshinProcess(scope){
@@ -3458,12 +3802,106 @@ const TM_POOL=[
 const TM_AV=['av-red','av-orange','av-green','av-purple','av-teal','av-pink','av-blue','av-yellow'];
 function tmHash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
 function tmAvCls(name){return TM_AV[tmHash(name)%8];}
-let tmState={team:'고등1A팀',view:'dashboard',member:null,procFilter:'all'};
+let tmState={team:'고등1A팀',view:'dashboard',member:null,procFilter:'all',processMetric:'opening'};
 function setTmTeam(t){tmState.team=t;tmState.member=null;go('a-team');}
 function goTmTeam(t){tmState.team=t;tmState.view='dashboard';tmState.member=null;go('a-team');}
 function setTmView(v){tmState.view=v;const c=document.getElementById('content');const sc=c?c.scrollTop:0;go('a-team');if(c)c.scrollTop=sc;}
 function setTmMember(m){tmState.member=m;tmState.procFilter='all';const c=document.getElementById('content');const sc=c?c.scrollTop:0;go('a-team');if(c)c.scrollTop=sc;}
 function setTmProcFilter(f){tmState.procFilter=f;const c=document.getElementById('content');const sc=c?c.scrollTop:0;go('a-team');if(c)c.scrollTop=sc;}
+function setTmProcessMetric(v){tmState.processMetric=v;const c=document.getElementById('content');const sc=c?c.scrollTop:0;go('a-team');if(c)c.scrollTop=sc;}
+function tmProcessRate(memberName,processKey,baseRate,idx=0){
+  const offsets={opening:0,dorae:-7,naeshin:5};
+  const off=offsets[processKey]??0;
+  return Math.max(45,Math.min(98,baseRate+off+(tmHash(memberName+processKey)%9)-4-idx));
+}
+function tmShowProcessDetail(memberName,processKey,rate){
+  const meta={
+    opening:{label:'개강 프로세스',steps:['개강전 설문','진단고사','개강후 설문','1일차 공유','위험군 컨택','1주차 계획','환불 방어']},
+    dorae:{label:'도래자 프로세스',steps:['도래 대상 확인','D-7 상담','D-3 상담','재결제 반응 체크','미응답 재컨택','완료 처리']},
+    naeshin:{label:'내신 프로세스',steps:['범위 확인','기출 분석','계획 수립','시험 응시','오답 정리','리포트 발송']},
+  }[processKey]||{label:'프로세스',steps:['액션 확인','상담 기록','완료 처리']};
+  const seed=tmHash(memberName+processKey);
+  const rows=meta.steps.map((step,i)=>{
+    const score=Math.max(40,Math.min(100,rate+(seed%(i+5))-i*3));
+    const cls=score>=85?'g':score>=70?'o':'r';
+    const state=score>=85?'완료':score>=70?'진행':'주의';
+    return [`<button class="btn" style="min-height:28px;font-size:12px;padding:0 10px" onclick="tmShowActionStudents('${memberName}','${processKey}','${step}',${score})">${step}</button>`,TAG(state,cls),score+'%',score<70?TAG('오늘 확인','r'):score<85?TAG('금주 내','o'):TAG('정상','g')];
+  });
+  const late=rows.filter(r=>String(r[1]).includes('주의')).length;
+  const body=`<div class="grid g3" style="margin-bottom:14px">
+    ${KPI('수행률',rate,'%','blue',meta.label)}
+    ${KPI('주의 액션',late,'건',late?'red':'green',late?'관리 필요':'이상 없음',late?'down':'up')}
+    ${KPI('담당 학생',12+(seed%7),'명','purple',memberName+' 담당')}
+  </div>
+  ${PANEL('액션별 상세 현황',TABLE(['액션','상태','수행률','처리 기준'],rows))}
+  <div id="tm-action-students" style="margin-top:12px"></div>
+  <div style="margin-top:12px;font-size:12px;color:var(--sub);line-height:1.65">
+    액션명을 누르면 해당 액션에 연결된 학생 리스트가 아래에 표시됩니다.
+  </div>`;
+  openModal(memberName+' · '+meta.label,body);
+}
+function tmShowActionStudents(memberName,processKey,step,score){
+  const el=document.getElementById('tm-action-students');
+  if(!el)return;
+  const processName={opening:'개강 프로세스',dorae:'도래자 프로세스',naeshin:'내신 프로세스'}[processKey]||'프로세스';
+  const seed=tmHash(memberName+processKey+step);
+  const pool=TM_POOL.map((p,i)=>({name:p[0],grade:p[1],school:p[2],status:p[3],cls:p[4],idx:i}));
+  const count=Math.max(3,Math.min(7,Math.round((100-score)/12)+3));
+  const selected=pool.slice(seed%5).concat(pool).slice(0,count);
+  const rows=selected.map((s,i)=>{
+    const state=i%3===0&&score<75?'미완료':i%3===1?'진행중':'완료';
+    const cls=state==='완료'?'g':state==='진행중'?'o':'r';
+    const due=state==='완료'?'처리 완료':i%2?'금주 내':'오늘 확인';
+    return [
+      `<b style="color:#191f28">${s.name}</b>`,
+      TAG(s.grade,'n'),
+      s.school,
+      TAG(s.status,s.cls),
+      TAG(state,cls),
+      due,
+    ];
+  });
+  el.innerHTML=PANEL(step+' 학생 리스트',`
+    <div style="font-size:12px;color:var(--sub);font-weight:700;margin-bottom:10px">${memberName} · ${processName} · ${step} 연결 학생 ${rows.length}명</div>
+    ${TABLE(['학생','학년','학교','학생 상태','액션 상태','처리 기준'],rows)}
+  `);
+}
+function tmSttStats(member){
+  const seed=tmHash(member.name+'stt');
+  const total=8+(seed%13);
+  const complete=Math.max(3,total-(seed%5)-1);
+  const pending=total-complete;
+  const risk=Math.min(complete,seed%4);
+  const avg=parseFloat(member.stt||'0');
+  const good=avg>=4.2?'우수':avg>=3.8?'정상':'관찰';
+  const cls=avg>=4.2?'g':avg>=3.8?'b':'o';
+  return {total,complete,pending,risk,avg,good,cls};
+}
+function tmShowSttDetail(memberName,score,total,complete,pending,risk){
+  const seed=tmHash(memberName+'stt-detail');
+  const items=[
+    ['상담 태도',Math.min(5,Math.max(3.1,score+(seed%5-2)*0.1)).toFixed(1)],
+    ['니즈 파악',Math.min(5,Math.max(3.1,score+((seed>>2)%5-2)*0.1)).toFixed(1)],
+    ['학습 판단',Math.min(5,Math.max(3.1,score+((seed>>4)%5-2)*0.1)).toFixed(1)],
+    ['솔루션 제안',Math.min(5,Math.max(3.1,score+((seed>>6)%5-2)*0.1)).toFixed(1)],
+    ['클로징',Math.min(5,Math.max(3.1,score+((seed>>8)%5-2)*0.1)).toFixed(1)],
+  ];
+  const rows=items.map(([label,val])=>[label,val+'점',`<div class="bar"><div class="fill ${val>=4.2?'g':val>=3.8?'b':'o'}" style="width:${Math.round(val/5*100)}%"></div></div>`]);
+  const recent=[
+    ['김민서','개강 상담','2026.06.14',TAG('요약 완료','g')],
+    ['오서아','위험군 상담','2026.06.13',TAG('관리 필요','r')],
+    ['정민준','도래 상담','2026.06.12',TAG('진행중','o')],
+  ];
+  const body=`<div class="grid g4" style="margin-bottom:14px">
+    ${KPI('STT 평균',score.toFixed(1),'점','blue','5점 만점')}
+    ${KPI('상담 진행',total,'건','purple','이번 달')}
+    ${KPI('평가 완료',complete,'건','green','미평가 '+pending+'건')}
+    ${KPI('위험 상담',risk,'건',risk?'확인 필요':'이상 없음',risk?'down':'up')}
+  </div>
+  ${PANEL('STT 5항목 평가',TABLE(['항목','점수','분포'],rows))}
+  <div style="margin-top:12px">${PANEL('최근 상담 기록',TABLE(['학생','상담 유형','일자','상태'],recent))}</div>`;
+  openModal(memberName+' · STT 평가 상세',body);
+}
 window._tmRecAllRows=[];
 function tmShowRecDetail(idx){
   const r=window._tmRecAllRows[idx];if(!r)return;
@@ -3817,6 +4255,99 @@ function previewImages(input,targetId){
   });
 }
 
+// ── sent todos (기능1) ──
+let sentTodos=JSON.parse(localStorage.getItem('sent_todos')||'[]');
+function saveSentTodos(){localStorage.setItem('sent_todos',JSON.stringify(sentTodos));}
+function openTodoSendModal(team){
+  const members=TM_MEMBERS[team]||[];
+  const memberCheckboxes=members.map(m=>`<label style="display:flex;align-items:center;gap:7px;padding:5px 0;cursor:pointer;font-size:13px;font-weight:600"><input type="checkbox" class="todo-send-member" value="${m}" style="width:15px;height:15px;accent-color:var(--blue)"> ${m}</label>`).join('');
+  const body=`<div style="display:flex;flex-direction:column;gap:14px">
+    <div><label style="font-size:12px;font-weight:700;color:var(--sub);display:block;margin-bottom:5px">업무 제목</label>
+      <input id="ts-title" class="search" style="width:100%;box-sizing:border-box" placeholder="예) 위험군 컨택 완료 처리"></div>
+    <div><label style="font-size:12px;font-weight:700;color:var(--sub);display:block;margin-bottom:5px">설명</label>
+      <textarea id="ts-desc" rows="2" style="width:100%;resize:none;border:1.5px solid #E5E7EB;border-radius:12px;padding:8px 12px;outline:none;font:inherit;font-size:12.5px" placeholder="상세 내용 (선택)"></textarea></div>
+    <div style="display:flex;gap:12px">
+      <div style="flex:1"><label style="font-size:12px;font-weight:700;color:var(--sub);display:block;margin-bottom:5px">카테고리</label>
+        <select id="ts-cat" class="select" style="width:100%"><option>개강</option><option>도래</option><option>내신</option><option>기타</option></select></div>
+      <div style="flex:1"><label style="font-size:12px;font-weight:700;color:var(--sub);display:block;margin-bottom:5px">마감</label>
+        <select id="ts-due" class="select" style="width:100%"><option value="today">오늘</option><option value="week">이번 주</option></select></div>
+    </div>
+    <div><label style="font-size:12px;font-weight:700;color:var(--sub);display:block;margin-bottom:7px">발송 대상</label>
+      <label style="display:flex;align-items:center;gap:7px;padding:5px 0;cursor:pointer;font-size:13px;font-weight:700;color:var(--blue)">
+        <input type="checkbox" id="ts-all" style="width:15px;height:15px;accent-color:var(--blue)" onchange="document.querySelectorAll('.todo-send-member').forEach(c=>c.checked=this.checked)"> 팀 전체 일괄 발송 (${team})
+      </label>
+      <div style="margin-left:4px;border-left:2px solid #e5e7eb;padding-left:12px;margin-top:4px">${memberCheckboxes}</div>
+    </div>
+    <button class="btn primary" style="width:100%;justify-content:center" onclick="submitTodoSend('${team}')"><i class="ti ti-send"></i> 발송</button>
+  </div>`;
+  openModal(`업무 발송 · ${team}`,body);
+}
+function submitTodoSend(team){
+  const title=(document.getElementById('ts-title')||{}).value?.trim();
+  if(!title){showToast('업무 제목을 입력하세요.');return;}
+  const desc=(document.getElementById('ts-desc')||{}).value?.trim()||'';
+  const cat=(document.getElementById('ts-cat')||{}).value;
+  const due=(document.getElementById('ts-due')||{}).value;
+  const checked=[...document.querySelectorAll('.todo-send-member:checked')].map(c=>c.value);
+  const allChecked=(document.getElementById('ts-all')||{}).checked;
+  const members=TM_MEMBERS[team]||[];
+  const targets=allChecked?members:checked;
+  if(!targets.length){showToast('발송 대상을 선택하세요.');return;}
+  const sender='김밀당';
+  const now=new Date();
+  const timeStr=now.toISOString();
+  targets.forEach(member=>{
+    sentTodos.push({id:timeStr+'_'+member,title,desc,category:cat,due,assignee:member,team,sender,createdAt:timeStr,done:false});
+  });
+  localStorage.setItem('sent_todos',JSON.stringify(sentTodos));
+  closeModal();
+  showToast(`업무 발송 완료 (${targets.length}명)`);
+}
+
+// ── permission state (기능2) ──
+let permState={tab:'계정 관리'};
+function goPermTab(tab){permState.tab=tab;go('a-perm');}
+const _PERM_ACCOUNTS=[
+  {name:'김서연',email:'teacher1@mathontact.com',role:'팀장',dept:'초등팀',last:'2026.06.09'},
+  {name:'이준호',email:'teacher2@mathontact.com',role:'선생님',dept:'초등팀',last:'2026.06.09'},
+  {name:'박민지',email:'teacher3@mathontact.com',role:'선생님',dept:'초등팀',last:'2026.06.09'},
+  {name:'정재현',email:'teacher4@mathontact.com',role:'팀장',dept:'중등1A팀',last:'2026.06.09'},
+  {name:'유민지',email:'teacher5@mathontact.com',role:'선생님',dept:'중등1A팀',last:'2026.06.09'},
+  {name:'노혜영',email:'teacher6@mathontact.com',role:'선생님',dept:'중등1A팀',last:'2026.06.09'},
+  {name:'정지숙',email:'teacher7@mathontact.com',role:'팀장',dept:'중등2A팀',last:'2026.06.09'},
+  {name:'박재국',email:'teacher8@mathontact.com',role:'선생님',dept:'중등2A팀',last:'2026.06.09'},
+  {name:'한도윤',email:'teacher9@mathontact.com',role:'선생님',dept:'중등2A팀',last:'2026.06.09'},
+  {name:'추진주',email:'teacher10@mathontact.com',role:'팀장',dept:'중등3A팀',last:'2026.06.09'},
+  {name:'오세훈',email:'teacher11@mathontact.com',role:'선생님',dept:'중등3A팀',last:'2026.06.09'},
+  {name:'임수아',email:'teacher12@mathontact.com',role:'선생님',dept:'중등3A팀',last:'2026.06.09'},
+  {name:'박지훈',email:'teacher13@mathontact.com',role:'팀장',dept:'고등1A팀',last:'2026.06.09'},
+  {name:'이서준',email:'teacher14@mathontact.com',role:'선생님',dept:'고등1A팀',last:'2026.06.09'},
+  {name:'정하린',email:'teacher15@mathontact.com',role:'선생님',dept:'고등1A팀',last:'2026.06.09'},
+  {name:'조준영',email:'teacher16@mathontact.com',role:'팀장',dept:'고등2A팀',last:'2026.06.09'},
+  {name:'김태리',email:'teacher17@mathontact.com',role:'선생님',dept:'고등2A팀',last:'2026.06.09'},
+  {name:'윤도현',email:'teacher18@mathontact.com',role:'선생님',dept:'고등2A팀',last:'2026.06.09'},
+  {name:'원상희',email:'teacher19@mathontact.com',role:'팀장',dept:'고등3A팀',last:'2026.06.09'},
+  {name:'강민호',email:'teacher20@mathontact.com',role:'선생님',dept:'고등3A팀',last:'2026.06.09'},
+  {name:'서지원',email:'teacher21@mathontact.com',role:'선생님',dept:'고등3A팀',last:'2026.06.09'},
+  {name:'장우진',email:'teacher22@mathontact.com',role:'팀장',dept:'B2B사업팀',last:'2026.06.09'},
+  {name:'홍서영',email:'teacher23@mathontact.com',role:'선생님',dept:'B2B사업팀',last:'2026.06.09'},
+  {name:'김밀당',email:'admin@mathontact.com',role:'관리자',dept:'본부',last:'2026.06.09'},
+];
+let accountState=JSON.parse(localStorage.getItem('account_state')||JSON.stringify({김서연:'active',이준호:'active',박민지:'active',정재현:'active',유민지:'active',노혜영:'active',정지숙:'active',박재국:'active',한도윤:'active',추진주:'active',오세훈:'active',임수아:'active',박지훈:'active',이서준:'active',정하린:'active',조준영:'active',김태리:'active',윤도현:'active',원상희:'active',강민호:'active',서지원:'active',장우진:'active',홍서영:'active'}));
+function toggleAccount(name){
+  accountState[name]=accountState[name]==='active'?'inactive':'active';
+  localStorage.setItem('account_state',JSON.stringify(accountState));
+  go('a-perm');
+}
+let pagePerms=JSON.parse(localStorage.getItem('page_perms')||'{}');
+function setPagePerm(pageId,key,val){
+  if(!pagePerms[pageId])pagePerms[pageId]={view:true,edit:false,del:false,admin:''};
+  pagePerms[pageId][key]=val;
+  localStorage.setItem('page_perms',JSON.stringify(pagePerms));
+  showToast('권한 설정이 저장되었습니다');
+}
+
+
 // ── pages ──
 const pages={
 
@@ -3840,6 +4371,7 @@ ${(()=>{const rc=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes
       <span class="tag r" style="font-size:11px">오늘 마감</span>
     </div>
     <div class="todo-list" id="today-todo-list">
+      ${(()=>{const myName=role==='teacher'?'박지훈':'김밀당';const myTeam=role==='teacher'?'고등1A팀':'본부';const catC={개강:'b',도래:'g',내신:'v',기타:'n'};const barC={개강:'tlb-blue',도래:'tlb-green',내신:'tlb-purple',기타:'tlb-amber'};return sentTodos.filter(t=>t.due==='today'&&(t.assignee===myName||(t.assignee?.startsWith('__TEAM__')&&t.assignee==='__TEAM__'+myTeam))).map(t=>`<div class="todo-row" data-todo-id="${t.id}"><div class="todo-left-bar ${barC[t.category]||'tlb-blue'}"></div><div style="flex:1"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px"><span class="tag ${catC[t.category]||'b'}" style="font-size:10px">${t.category}</span><span class="todo-label">${t.title}</span></div><span class="todo-desc">${t.desc||t.sender+' 팀장 발송'}</span><div class="todo-badge-row"><span class="deadline-badge">오늘 마감</span></div></div><input type="checkbox" class="todo-check" data-todo-id="${t.id}" style="width:18px;height:18px;cursor:pointer;accent-color:var(--blue);flex-shrink:0;margin-top:4px"></div>`).join('');})()}
       <div class="todo-row" data-todo-id="t1">
         <div class="todo-left-bar tlb-blue"></div>
         <div style="flex:1">
@@ -3884,6 +4416,7 @@ ${(()=>{const rc=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes
       <span style="font-size:12px;color:var(--sub)">이번 주 마감</span>
     </div>
     <div class="todo-list" id="week-todo-list">
+      ${(()=>{const myName=role==='teacher'?'박지훈':'김밀당';const myTeam=role==='teacher'?'고등1A팀':'본부';const catC={개강:'b',도래:'g',내신:'v',기타:'n'};const barC={개강:'tlb-blue',도래:'tlb-green',내신:'tlb-purple',기타:'tlb-amber'};return sentTodos.filter(t=>t.due==='week'&&(t.assignee===myName||(t.assignee?.startsWith('__TEAM__')&&t.assignee==='__TEAM__'+myTeam))).map(t=>`<div class="todo-row" data-todo-id="${t.id}"><div class="todo-left-bar ${barC[t.category]||'tlb-blue'}"></div><div style="flex:1"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px"><span class="tag ${catC[t.category]||'b'}" style="font-size:10px">${t.category}</span><span class="todo-label">${t.title}</span></div><span class="todo-desc">${t.desc||t.sender+' 팀장 발송'}</span><div class="todo-badge-row"><span class="deadline-badge fri">이번 주 마감</span></div></div><input type="checkbox" class="todo-check" data-todo-id="${t.id}" style="width:18px;height:18px;cursor:pointer;accent-color:var(--blue);flex-shrink:0;margin-top:4px"></div>`).join('');})()}
       <div class="todo-row" data-todo-id="t4">
         <div class="todo-left-bar tlb-green"></div>
         <div style="flex:1">
@@ -4324,7 +4857,7 @@ ${(()=>{const rc=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes
   </div>`;
 },
 
-'t-process':()=>H('개강 프로세스','개강예정자부터 개강 10일차 학생까지 액션별 진행 여부를 확인합니다.')+
+'t-process':()=>H('<iconify-icon icon="solar:square-academic-cap-bold-duotone" style="font-size:24px;margin-right:8px;vertical-align:-4px;color:var(--blue)"></iconify-icon>개강 프로세스','개강예정자부터 개강 10일차 학생까지 액션별 진행 여부를 확인합니다.')+
 `<div class="grid g4" style="margin-bottom:16px">
   ${KPI('관리 대상','42','명','blue','개강예정 ~ 개강 10일차')}
   ${KPI('위험군','7','명','red','컨택 필요 4명','down')}
@@ -4333,19 +4866,19 @@ ${(()=>{const rc=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes
 </div>
 <section class="panel">
   <div class="panel-h">
-    <span>학생별 액션 진행 테이블</span>
-    <span style="color:var(--sub);font-size:12px">셀을 선택하면 오른쪽에서 액션 상세를 확인합니다.</span>
+    <span><iconify-icon icon="solar:list-check-linear" style="font-size:16px;margin-right:6px;vertical-align:-3px"></iconify-icon>학생별 액션 진행 테이블</span>
+    <span style="color:var(--sub);font-size:12px">셀을 클릭하면 상세 팝업이 열립니다.</span>
     ${TAG('2026-06-08 기준','b')}
   </div>
   <div class="panel-b process-layout">
     <div>
       <div class="filterbar">
         <div class="filter-group">
-          <button class="filter-chip on" type="button">전체</button>
-          <button class="filter-chip" type="button">개강예정</button>
-          <button class="filter-chip" type="button">개강 1~3일차</button>
-          <button class="filter-chip" type="button">개강 4~10일차</button>
-          <button class="filter-chip" type="button">위험군</button>
+          <button class="filter-chip on" type="button" onclick="filterProcessRows(this,'all')">전체</button>
+          <button class="filter-chip" type="button" onclick="filterProcessRows(this,'scheduled')">개강예정</button>
+          <button class="filter-chip" type="button" onclick="filterProcessRows(this,'d1')">개강 1~3일차</button>
+          <button class="filter-chip" type="button" onclick="filterProcessRows(this,'d4')">개강 4~10일차</button>
+          <button class="filter-chip" type="button" onclick="filterProcessRows(this,'risk')">위험군</button>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
           <input class="search" placeholder="학생 검색" style="width:180px;min-height:32px">
@@ -4355,7 +4888,7 @@ ${(()=>{const rc=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes
       <div class="table-wrap">
         <table class="process-table" style="min-width:1180px">
           <thead><tr>
-            <th style="text-align:left;min-width:110px">학생</th>
+            <th style="text-align:left;min-width:77px;width:77px">학생</th>
             <th>개강 상태</th>
             <th>1. 개강전 설문</th>
             <th>2. 진단고사</th>
@@ -4366,7 +4899,7 @@ ${(()=>{const rc=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes
             <th>7. 환불 방어 컨택</th>
           </tr></thead>
           <tbody>
-            <tr>
+            <tr class="proc-row" data-daynum="1" data-rowrisk="위험군">
               <td><div class="proc-student-cell" onclick="openingSelectStudent(this)"
                 data-name="김민서" data-grade="고1" data-gen="635기"
                 data-start="2026-06-08" data-school="유성여자고등학교"
@@ -4383,7 +4916,7 @@ ${(()=>{const rc=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes
               <td><span class="process-cell pending" onclick="openingSelectAction(this)" data-student="김민서" data-day="개강 1일차" data-action="weekPlan">생성 대기</span></td>
               <td><span class="process-cell pending" onclick="openingSelectAction(this)" data-student="김민서" data-day="개강 1일차" data-action="refundDefense">무선 예정</span></td>
             </tr>
-            <tr>
+            <tr class="proc-row" data-daynum="0" data-rowrisk="판정 전">
               <td><div class="proc-student-cell" onclick="openingSelectStudent(this)"
                 data-name="고나원" data-grade="중2" data-gen="635기"
                 data-start="2026-06-10" data-school="중산중학교"
@@ -4400,7 +4933,7 @@ ${(()=>{const rc=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes
               <td><span class="process-cell pending" onclick="openingSelectAction(this)" data-student="고나원" data-day="개강예정" data-action="weekPlan">대기</span></td>
               <td><span class="process-cell pending" onclick="openingSelectAction(this)" data-student="고나원" data-day="개강예정" data-action="refundDefense">대기</span></td>
             </tr>
-            <tr>
+            <tr class="proc-row" data-daynum="7" data-rowrisk="일반">
               <td><div class="proc-student-cell" onclick="openingSelectStudent(this)"
                 data-name="최서연" data-grade="고2" data-gen="636기"
                 data-start="2026-06-01" data-school="대치고등학교"
@@ -4421,24 +4954,9 @@ ${(()=>{const rc=studentDB.filter(s=>s.steps.includes('risk')||s.status.includes
         </table>
       </div>
     </div>
-    <aside class="process-detail-panel">
-      <div class="process-detail-head">
-        <div>
-          <h3 id="od-title">위험군 컨택</h3>
-          <p id="od-meta">김민서 · 개강 1일차</p>
-        </div>
-        <span class="tag r" id="od-status">위험군/미실행</span>
-      </div>
-      <div style="padding:15px;overflow-y:auto;max-height:calc(100vh - 220px)">
-        <div class="risk-score-grid">
-          <div class="score-card"><label>위험군 점수</label><strong id="od-rscore">4<span>점</span></strong></div>
-          <div class="score-card"><label>누적 점수</label><strong id="od-tscore">11<span>점 · 위험군</span></strong></div>
-        </div>
-        <div id="od-body"></div>
-      </div>
-    </aside>
   </div>
 </section>
+<div style="margin-top:24px"></div>
 ${PANEL('리포트 생성기',`
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:flex-end;margin-bottom:14px">
   <div>
@@ -4473,7 +4991,7 @@ ${PANEL('리포트 생성기',`
   </div>
   <div id="rg-body" style="font-size:13px;line-height:1.7;color:#374151;white-space:pre-line"></div>
 </div>
-`)}`,
+`)}` + '<div style="margin-top:24px"></div>' + buildPreSurveyResponseTable(),
 
 't-dorae':()=>H('도래자 프로세스','도래 시점별 상담과 후속 액션을 관리합니다.')+
 `<div class="calc-widget">
@@ -4567,7 +5085,7 @@ PANEL('학생별 액션 아카이브',
 </div>`,
 
 // ── ADMIN PAGES ──
-'a-bonbu':()=>{const _bk=computeBonbuKPIs();const _avgEx=Math.round(Object.values(SIL_METRICS).reduce((s,r)=>s+r.extend,0)/Object.values(SIL_METRICS).length);const _avgRfr=Math.round(Object.values(SIL_METRICS).reduce((s,r)=>s+r.refund*10,0)/Object.values(SIL_METRICS).length)/10;return H('수학본부 대시보드','본부 핵심 KPI와 신규PT 개강 트래킹을 한 화면에서 확인합니다. (ROOM DB 기반 실시간 집계)')+
+'a-bonbu':()=>{const _bk=computeBonbuKPIs();const _avgEx=Math.round(Object.values(SIL_METRICS).reduce((s,r)=>s+r.extend,0)/Object.values(SIL_METRICS).length);const _avgRfr=Math.round(Object.values(SIL_METRICS).reduce((s,r)=>s+r.refund*10,0)/Object.values(SIL_METRICS).length)/10;return H('수학온택트본부 현황','본부 핵심 KPI와 개강 프로세스 일별 현황을 한 화면에서 확인합니다. (ROOM DB 기반 실시간 집계)')+
 `<div class="grid g4" style="margin-bottom:16px">
   ${KPI('전체 PT 수',_bk.total.toLocaleString(),'명','blue','ROOM DB 6개 실 합산')}
   ${KPI('재수강률',_bk.rr,'%','green','가중 평균 · 목표 75%',_bk.rr>=75?'up':'down')}
@@ -4583,10 +5101,10 @@ PANEL('학생별 액션 아카이브',
   </select>
 </div>
 <div id="bonbu-trends" style="margin-bottom:16px">
-  ${renderBonbuTrendsInline('bonbu','monthly')}
+  ${renderBonbuTrendPanels('bonbu','monthly')}
 </div>
 <section class="panel">
-  <div class="panel-h"><span>신규PT 개강 트래킹</span><div class="ph-right">${TAG('2026년 6월','b')}</div></div>
+  <div class="panel-h"><span>개강 프로세스 일별 현황</span><div class="ph-right">${TAG('2026년 6월','b')}</div></div>
   <div class="panel-b">
     <div class="ptcal-controls">
       <label>기간 선택</label>
@@ -4609,7 +5127,7 @@ PANEL('학생별 액션 아카이브',
 
 'a-sil':()=>{
   const s=silState;
-  const tabDefs=[['대시보드','dashboard'],['개강프로세스','opening'],['도래프로세스','dorae'],['내신프로세스','naeshin'],['특강프로세스','special']];
+  const tabDefs=[['KPI','dashboard'],['개강프로세스','opening'],['도래프로세스','dorae'],['내신프로세스','naeshin'],['특강프로세스','special']];
   const tabBar=`<div class="tabs" style="margin-bottom:14px">${tabDefs.map(([label,key])=>`<div class="tab ${s.tab===key?'on':''}" onclick="goSilTab('${key}')">${label}</div>`).join('')}</div>`;
   const queryUI=buildSilQueryUI();
   let content='';
@@ -4651,18 +5169,58 @@ PANEL('학생별 액션 아카이브',
 
   let content='';
   if(tmState.view==='dashboard'){
-    const procChart=VCHART('팀원별 프로세스 수행률 (%)',memberData.map(m=>m.name),memberData.map(m=>m.procRate),memberData.map(m=>m.procRate>=80?'#10b981':m.procRate>=60?'#f59e0b':'#ef4444'));
-    const rrChart=VCHART('팀원별 재수강률 (%)',memberData.map(m=>m.name),memberData.map(m=>m.rr),memberData.map(m=>m.rr>=76?'#10b981':m.rr>=72?'#f59e0b':'#ef4444'));
-    const ranked=memberData.slice().sort((a,b)=>b.rr-a.rr);
-    const rankRows=ranked.map((m,i)=>[
-      `<span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;font-size:11px;font-weight:950;background:${i===0?'#fef9c3':i===1?'#f1f5f9':i===2?'#fef3c7':'transparent'};color:${i===0?'#92400e':i===1?'#64748b':i===2?'#b45309':'#9ca3af'}">${i+1}</span>`,
+    const procMeta={
+      opening:{label:'개강프로세스',offset:0,desc:'개강 전/후 설문, 진단고사, 위험군 컨택 기준'},
+      dorae:{label:'도래자 프로세스',offset:-7,desc:'도래 상담, 재결제 반응, 완료 처리 기준'},
+      naeshin:{label:'내신프로세스',offset:5,desc:'범위 확인, 기출 분석, 리포트 발송 기준'},
+    };
+    const procKey=tmState.processMetric||'opening';
+    const procInfo=procMeta[procKey]||procMeta.opening;
+    const procVals=memberData.map((m,i)=>tmProcessRate(m.name,procKey,m.procRate,i));
+    const procValByName=Object.fromEntries(memberData.map((m,i)=>[m.name,procVals[i]]));
+    const procChart=PANEL('팀원별 프로세스 수행률',
+      `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;flex-wrap:wrap">
+        <div style="font-size:12px;color:var(--sub);font-weight:700">${procInfo.desc}</div>
+        <select class="select" style="min-height:30px;font-size:12px" onchange="setTmProcessMetric(this.value)">
+          <option value="opening"${procKey==='opening'?' selected':''}>개강프로세스</option>
+          <option value="dorae"${procKey==='dorae'?' selected':''}>도래자 프로세스</option>
+          <option value="naeshin"${procKey==='naeshin'?' selected':''}>내신프로세스</option>
+        </select>
+      </div>
+      ${VCHART(procInfo.label+' 수행률 (%)',memberData.map(m=>m.name),procVals,procVals.map(v=>v>=80?'#10b981':v>=60?'#f59e0b':'#ef4444')).replace(/^<section class="panel"><div class="panel-h"><span>.*?<\/span><div class="ph-right"><\/div><\/div><div class="panel-b">/,'').replace(/<\/div><\/section>$/,'')}`);
+    const rrChart=TEAM_MEMBER_KPI_CHART('팀원별 KPI',memberData.map(m=>m.name),memberData.map(m=>m.rr),memberData.map(m=>m.ext),memberData.map(m=>m.rfr));
+    const procBtn=(m,key,label,idx)=>{
+      const rate=tmProcessRate(m.name,key,m.procRate,idx);
+      const c=rate>=80?'g':rate>=60?'o':'r';
+      return `<button class="tag ${c}" style="border:0;cursor:pointer;font-weight:900" onclick="tmShowProcessDetail('${m.name}','${key}',${rate})">${rate}%</button>`;
+    };
+    const detailRows=memberData.map((m,i)=>[
       `<b style="color:#191f28">${m.name}</b>`,
-      m.rr+'%', m.rfr+'%', m.stt,
-      `<div style="display:flex;align-items:center;gap:7px"><div style="width:70px;height:5px;background:#eef0f3;border-radius:3px;overflow:hidden"><div style="height:100%;width:${m.procRate}%;background:${m.procRate>=80?'var(--green)':m.procRate>=60?'var(--orange)':'var(--red)'};border-radius:3px"></div></div><span style="font-size:11px;font-weight:800;color:var(--sub)">${m.procRate}%</span></div>`,
+      m.total+'명',
+      m.rr+'%',
+      m.ext+'%',
+      m.rfr+'%',
+      procBtn(m,'opening','개강',i),
+      procBtn(m,'dorae','도래',i),
+      procBtn(m,'naeshin','내신',i),
       m.dailyReport?TAG('완료','g'):TAG('미보고','r'),
     ]);
+    const sttRows=memberData.map(m=>{
+      const s=tmSttStats(m);
+      const scoreBtn=`<button class="tag ${s.cls}" style="border:0;cursor:pointer;font-weight:900" onclick="tmShowSttDetail('${m.name}',${s.avg},${s.total},${s.complete},${s.pending},${s.risk})">${s.avg.toFixed(1)}점</button>`;
+      return [
+        `<b style="color:#191f28">${m.name}</b>`,
+        scoreBtn,
+        s.total+'건',
+        s.complete+'건',
+        s.pending?TAG(s.pending+'건','o'):TAG('0건','g'),
+        s.risk?TAG(s.risk+'건','r'):TAG('0건','g'),
+        TAG(s.good,s.cls),
+      ];
+    });
     content=`<div class="grid g2" style="margin-bottom:16px">${procChart}${rrChart}</div>`+
-      PANEL('팀원 성과 랭킹',TABLE(['순위','팀원','재수강률','신규환불률','STT','프로세스 수행률','데일리 보고'],rankRows));
+      PANEL('팀원별 상세 현황',TABLE(['팀원','관리학생','재수강률','연장률','신규전액환불률','개강 프로세스','도래자 프로세스','내신 프로세스','데일리 보고'],detailRows),'<span style="font-size:12px;color:var(--sub)">프로세스 % 클릭 시 상세 현황</span>')+
+      `<div style="margin-top:16px">${PANEL('소속 팀원 STT 평가',TABLE(['팀원','STT 평균','상담 진행','평가 완료','미평가','위험 상담','상태'],sttRows),'<span style="font-size:12px;color:var(--sub)">STT 점수 클릭 시 상담 평가 상세</span>')}</div>`;
   } else {
     const cur=tmState.member||members[0];
     const curData=memberData.find(m=>m.name===cur)||memberData[0];
@@ -4729,7 +5287,8 @@ PANEL('학생별 액션 아카이브',
     <div id="tm-rec-modal" onclick="if(event.target===this)tmHideRecDetail()" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.45);align-items:center;justify-content:center"></div>`;
   }
 
-  return H('팀별 관리 · '+team,'팀장이 팀원들의 KPI와 프로세스별 액션을 확인·관리합니다. 팀원이 기록한 프로세스 액션이 실시간으로 동기화됩니다.')+leaderTodo+kpiRow+seg+content;
+  const sendBtn=`<div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn primary" onclick="openTodoSendModal('${team}')"><i class="ti ti-send"></i> 업무 발송</button></div>`;
+  return H('팀별 관리 · '+team,'팀장이 팀원들의 KPI와 프로세스별 액션을 확인·관리합니다. 팀원이 기록한 프로세스 액션이 실시간으로 동기화됩니다.')+sendBtn+leaderTodo+kpiRow+seg+content;
 },
 
 'a-db':()=>{
@@ -4770,44 +5329,101 @@ PANEL('학생별 액션 아카이브',
   );
 },
 
-'a-eval':()=>H('평가 분석 (STT 5항목)','상담 품질 평가와 선생님별 평균 점수를 분석합니다.')+
-`<div class="grid g3">
-  ${PANEL('STT 5항목 레이더',`
-    <div class="radar">
-      <svg viewBox="0 0 240 200" width="240" height="200">
-        <polygon points="120,15 215,72 180,172 60,172 25,72" fill="none" stroke="#e5e7eb" stroke-width="1.5"/>
-        <polygon points="120,45 185,88 162,152 78,152 55,88" fill="none" stroke="#e5e7eb" stroke-width="1"/>
-        <polygon points="120,75 155,104 144,132 96,132 85,104" fill="none" stroke="#e5e7eb" stroke-width="1"/>
-        <line x1="120" y1="15" x2="120" y2="172" stroke="#e5e7eb" stroke-width="1"/>
-        <line x1="25" y1="72" x2="215" y2="72" stroke="#e5e7eb" stroke-width="1"/>
-        <line x1="60" y1="172" x2="180" y2="172" stroke="#e5e7eb" stroke-width="1"/>
-        <line x1="25" y1="72" x2="180" y2="172" stroke="#e5e7eb" stroke-width="1"/>
-        <line x1="215" y1="72" x2="60" y2="172" stroke="#e5e7eb" stroke-width="1"/>
-        <polygon points="120,30 200,82 170,162 70,162 40,82" fill="rgba(59,130,246,0.15)" stroke="#3b82f6" stroke-width="2"/>
-        <text x="120" y="9" text-anchor="middle" font-size="10" fill="#6b7280">태도 형성</text>
-        <text x="222" y="76" font-size="10" fill="#6b7280">니즈 파악</text>
-        <text x="184" y="180" font-size="10" fill="#6b7280">학습 판단</text>
-        <text x="30" y="180" font-size="10" fill="#6b7280">솔루션</text>
-        <text x="4" y="76" font-size="10" fill="#6b7280">클로징</text>
-      </svg>
-    </div>
-  `)}
-  ${PANEL('항목별 평균 점수',
-    `<div style="margin-bottom:6px">${BAR('태도 형성',86,'g')}</div>`+
-    `<div style="margin-bottom:6px">${BAR('니즈 파악',82,'b')}</div>`+
-    `<div style="margin-bottom:6px">${BAR('학습 판단',84,'b')}</div>`+
-    `<div style="margin-bottom:6px">${BAR('솔루션 제시',80,'v')}</div>`+
-    `<div style="margin-bottom:6px">${BAR('마무리 클로징',88,'g')}</div>`
-  )}
-  ${PANEL('선생님별 STT 랭킹',
-    (()=>{const T=buildTeacherRollup().slice(0,6);const maxStt=Math.max(...T.map(t=>parseFloat(t.stt)));return T.map(t=>{const sttF=parseFloat(t.stt);const w=Math.round(sttF/maxStt*100);const cls=sttF>=4.2?'g':sttF>=3.8?'b':'o';return `<div class="rank"><span style="font-weight:700">${t.name}<small style="color:var(--sub);font-weight:400;margin-left:4px">${t.room}</small></span><div class="hline"><span style="width:${w}%;background:${sttF>=4.2?'var(--green)':sttF>=3.8?'var(--blue)':'var(--orange)'};display:block;height:100%;border-radius:20px"></span></div><b>${t.stt}</b></div>`;}).join('');})()
-  )}
-</div>`,
+'a-eval':()=>{
+  const procFilter=window._evalProcFilter||'전체';
+  const rollup=buildTeacherRollup();
+  const rollupNames=new Set(rollup.map(t=>t.name));
+  const allTeachers=[...rollup];
+  Object.entries(TM_MEMBERS).forEach(([team,members])=>{
+    members.forEach(name=>{
+      if(!rollupNames.has(name)){
+        allTeachers.push({
+          name,team,room:team,
+          stt:(3.8+(tmHash(name)%5)/10).toFixed(1),
+          rr:70+(tmHash(name)%12),
+          rfr:8+(tmHash(name)%5),
+          ext:88+(tmHash(name+'e')%8),
+        });
+      }
+    });
+  });
+  allTeachers.sort((a,b)=>parseFloat(b.stt)-parseFloat(a.stt));
+  function evalSttByProc(name,sttBase,procIdx){
+    const seed=tmHash(name+'eval'+procIdx);
+    const scores=[0,1,2,3,4].map(i=>Math.min(5,Math.max(3.0,parseFloat(sttBase)+((seed>>(i*3))%9-4)*0.1)));
+    return (scores.reduce((a,b)=>a+b,0)/5).toFixed(1);
+  }
+  function evalItemBreakdown(name,sttBase,procIdx){
+    const seed=tmHash(name+'eval'+procIdx);
+    return [0,1,2,3,4].map(i=>Math.min(5,Math.max(3.0,parseFloat(sttBase)+((seed>>(i*3))%9-4)*0.1)).toFixed(1));
+  }
+  function evalFeedback(avg){
+    return avg>=4.2?'전 항목 우수 · 현행 유지':avg>=3.8?'전반적 양호 · 니즈 파악 보완':'솔루션 제시 집중 개선 필요';
+  }
+  const rankBadge=['🥇','🥈','🥉'];
+  const rankTableRows=allTeachers.map((t,i)=>{
+    const rankCell=i<3?`<span style="font-size:16px">${rankBadge[i]}</span>`:TAG((i+1)+'위','n');
+    const s0=evalSttByProc(t.name,t.stt,0);
+    const s1=evalSttByProc(t.name,t.stt,1);
+    const s2=evalSttByProc(t.name,t.stt,2);
+    return [rankCell,`<b>${t.name}</b>`,t.team,
+      TAG(s0,parseFloat(s0)>=4.2?'g':parseFloat(s0)>=3.8?'b':'o'),
+      t.rfr+'%',
+      TAG(s1,parseFloat(s1)>=4.2?'g':parseFloat(s1)>=3.8?'b':'o'),
+      t.rr+'%',
+      TAG(s2,parseFloat(s2)>=4.2?'g':parseFloat(s2)>=3.8?'b':'o')];
+  });
+  const procNames=['개강','도래','내신'];
+  const filterBtns=['전체',...procNames].map(p=>`<button class="btn${procFilter===p?' primary':''}" style="min-height:30px;font-size:12px" onclick="window._evalProcFilter='${p}';go('a-eval')">${p}</button>`).join('');
+  const detailRows=[];
+  allTeachers.forEach(t=>{
+    procNames.forEach((proc,pIdx)=>{
+      if(procFilter!=='전체'&&proc!==procFilter)return;
+      const parts=evalItemBreakdown(t.name,t.stt,pIdx);
+      const avg=parts.reduce((s,v)=>s+parseFloat(v),0)/parts.length;
+      const tc=avg>=4.2?'g':avg>=3.8?'b':'o';
+      detailRows.push([t.name,t.team,proc,TAG(avg.toFixed(1),tc),...parts.map(v=>{const fv=parseFloat(v);return TAG(v,fv>=4.2?'g':fv>=3.8?'b':'o');}),`<span style="font-size:11px;color:var(--sub);white-space:normal">${evalFeedback(avg)}</span>`]);
+    });
+  });
+  const detailHeads=['이름','부서(팀)','프로세스','STT 총점','태도형성','니즈파악','학습판단','솔루션제시','마무리클로징','피드백'];
+  return H('상담 평가','STT 분석 기반 선생님별 · 프로세스별 상담 평가를 확인합니다.')+
+  `<div class="grid g2" style="margin-bottom:16px">
+    ${PANEL('STT 5항목 레이더',`<div style="display:flex;justify-content:center"><svg viewBox="0 0 240 200" width="240" height="200">
+      <polygon points="120,15 215,72 180,172 60,172 25,72" fill="none" stroke="#e5e7eb" stroke-width="1.5"/>
+      <polygon points="120,45 185,88 162,152 78,152 55,88" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+      <polygon points="120,75 155,104 144,132 96,132 85,104" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+      <line x1="120" y1="15" x2="120" y2="172" stroke="#e5e7eb" stroke-width="1"/>
+      <line x1="25" y1="72" x2="215" y2="72" stroke="#e5e7eb" stroke-width="1"/>
+      <line x1="60" y1="172" x2="180" y2="172" stroke="#e5e7eb" stroke-width="1"/>
+      <line x1="25" y1="72" x2="180" y2="172" stroke="#e5e7eb" stroke-width="1"/>
+      <line x1="215" y1="72" x2="60" y2="172" stroke="#e5e7eb" stroke-width="1"/>
+      <polygon points="120,30 200,82 170,162 70,162 40,82" fill="rgba(59,130,246,0.15)" stroke="#3b82f6" stroke-width="2"/>
+      <text x="120" y="9" text-anchor="middle" font-size="10" fill="#6b7280">태도 형성</text>
+      <text x="222" y="76" font-size="10" fill="#6b7280">니즈 파악</text>
+      <text x="184" y="180" font-size="10" fill="#6b7280">학습 판단</text>
+      <text x="30" y="180" font-size="10" fill="#6b7280">솔루션</text>
+      <text x="4" y="76" font-size="10" fill="#6b7280">클로징</text>
+    </svg></div>`)}
+    ${PANEL('항목별 평균 점수',
+      `<div style="margin-bottom:6px">${BAR('태도 형성',86,'g')}</div>`+
+      `<div style="margin-bottom:6px">${BAR('니즈 파악',82,'b')}</div>`+
+      `<div style="margin-bottom:6px">${BAR('학습 판단',84,'b')}</div>`+
+      `<div style="margin-bottom:6px">${BAR('솔루션 제시',80,'v')}</div>`+
+      `<div style="margin-bottom:6px">${BAR('마무리 클로징',88,'g')}</div>`
+    )}
+  </div>
+  <section class="panel"><div class="panel-h"><span>팀원 STT 전체 랭킹</span><div class="ph-right"><button class="btn" data-panel-toggle="eval-rank-body" onclick="togglePanel('eval-rank-body')" style="min-height:26px;font-size:11px;padding:0 10px">접기</button></div></div><div class="panel-b" id="eval-rank-body">${TABLE(['순위','팀원명','부서(팀)','개강 STT','신규환불률','도래 STT','연장률','내신 STT'],rankTableRows)}</div></section>
+  <div style="display:flex;align-items:center;gap:8px;margin-top:16px;margin-bottom:16px">
+    <span style="font-size:12px;font-weight:700;color:var(--sub)">프로세스 필터</span>
+    ${filterBtns}
+  </div>
+  <section class="panel"><div class="panel-h"><span>선생님별 · 프로세스별 상담평가 상세</span><div class="ph-right"><button class="btn" data-panel-toggle="eval-detail-body" onclick="togglePanel('eval-detail-body')" style="min-height:26px;font-size:11px;padding:0 10px">접기</button></div></div><div class="panel-b" id="eval-detail-body">${TABLE(detailHeads,detailRows)}</div></section>`;
+},
 
 't-eval':()=>H('일일평가','오늘 수업을 마친 학생별 출결, 집중도, 코칭, 학부모 공유 여부를 기록합니다.')+
 '<div id="eval-page-table" data-built="1">'+buildDailyEvalTable()+'</div>',
 
-'t-board':()=>{const admin=role==='admin';const me=admin?'정재현':'김밀당';const meTeam=admin?'본부':'B팀';const _topT=buildTeacherRollup()[0]||{name:'원상희',room:'고등3실',rr:79};return `<div class="page-head"><div><h1 class="page-title">사내 게시판</h1><p class="page-desc">월간 특별상, 인터뷰, 본부/회사 이슈, 진행 중인 TF와 모집 공고를 한곳에서 확인합니다. ${admin?'<b style="color:var(--blue)">관리자</b>는 공지를 작성할 수 있습니다.':'<b style="color:var(--blue)">팀원</b>은 자유 게시판에 실명으로 글을 남길 수 있습니다.'}</p></div><div class="actions"><button class="tb-btn-ghost"><iconify-icon icon="solar:filter-linear" style="font-size:15px"></iconify-icon>게시글 필터</button>${admin?`<button class="tb-btn-primary" onclick="alert('공지 작성 폼이 열립니다. (데모)')"><iconify-icon icon="solar:pen-new-square-linear" style="font-size:16px"></iconify-icon>새 공지 작성</button>`:`<button class="tb-btn-primary" onclick="document.getElementById('tb-free-title').focus()"><iconify-icon icon="solar:pen-new-square-linear" style="font-size:16px"></iconify-icon>글쓰기</button>`}</div></div>
+'t-board':()=>{const admin=role==='admin';const me='김밀당';const meTeam=admin?'본부':'B팀';const _topT=buildTeacherRollup()[0]||{name:'원상희',room:'고등3실',rr:79};return `<div class="page-head"><div><h1 class="page-title">사내 게시판</h1><p class="page-desc">월간 특별상, 인터뷰, 본부/회사 이슈, 진행 중인 TF와 모집 공고를 한곳에서 확인합니다. ${admin?'<b style="color:var(--blue)">관리자</b>는 공지를 작성할 수 있습니다.':'<b style="color:var(--blue)">팀원</b>은 자유 게시판에 실명으로 글을 남길 수 있습니다.'}</p></div><div class="actions"><button class="tb-btn-ghost"><iconify-icon icon="solar:filter-linear" style="font-size:15px"></iconify-icon>게시글 필터</button>${admin?`<button class="tb-btn-primary" onclick="alert('공지 작성 폼이 열립니다. (데모)')"><iconify-icon icon="solar:pen-new-square-linear" style="font-size:16px"></iconify-icon>새 공지 작성</button>`:`<button class="tb-btn-primary" onclick="document.getElementById('tb-free-title').focus()"><iconify-icon icon="solar:pen-new-square-linear" style="font-size:16px"></iconify-icon>글쓰기</button>`}</div></div>
 
 <div class="tb-hero">
   <div class="tb-award">
@@ -5006,21 +5622,271 @@ PANEL('학생별 액션 아카이브',
   </div>
 </div>`;},
 
-'a-perm':()=>H('권한 관리','계정 상태와 접근 권한을 관리합니다.','<button class="btn primary">+ 계정 추가</button>')+
-TABS(['계정 관리','권한 설정'])+
-PANEL('계정 목록',
-  TABLE(
-    ['이름','이메일','역할','소속','상태','최근 접속'],
-    [
-      ['이선생','teacher1@mathontact.com','선생님','강남실 / 중등1팀',TAG('활성','g'),'2026.06.09'],
-      ['박선생','teacher2@mathontact.com','선생님','분당실 / 고등1팀',TAG('활성','g'),'2026.06.08'],
-      ['김팀장','teamlead@mathontact.com','팀장','대치실 / 고등2팀',TAG('활성','g'),'2026.06.09'],
-      ['정재현','admin@mathontact.com','관리자','본부',TAG('활성','g'),'2026.06.09'],
-      ['이퇴사자','former@mathontact.com','선생님','—',TAG('비활성','r'),'2026.04.30'],
-    ]
-  )
-),
+'a-perm':()=>{
+  const tabBar=`<div class="tabs" style="margin-bottom:14px">${['계정 관리','권한 설정'].map(t=>`<div class="tab ${permState.tab===t?'on':''}" onclick="goPermTab('${t}')">${t}</div>`).join('')}</div>`;
+  let body='';
+  if(permState.tab==='계정 관리'){
+    const rows=_PERM_ACCOUNTS.map(a=>{
+      const st=accountState[a.name]||'active';
+      const stTag=st==='active'?TAG('활성','g'):TAG('비활성','r');
+      const togBtn=`<button class="btn" style="min-height:24px;font-size:11px;margin-left:6px;padding:0 9px" onclick="toggleAccount('${a.name}')">${st==='active'?'비활성화':'활성화'}</button>`;
+      return [a.name,a.email,a.role,a.dept,stTag+togBtn,a.last];
+    });
+    body=PANEL('계정 목록',TABLE(['이름','이메일','역할','소속','상태','최근 접속'],rows));
+  } else {
+    const pageList=[
+      {id:'t-home',label:'To-Do List'},{id:'t-my',label:'내 KPI'},{id:'t-eval',label:'일일평가'},
+      {id:'t-students',label:'학생 관리'},{id:'t-students-record',label:'학적 관리'},
+      {id:'t-process',label:'개강 프로세스'},{id:'t-dorae',label:'도래자 프로세스'},
+      {id:'t-naeshin',label:'내신 프로세스'},{id:'t-action',label:'액션 기록'},
+      {id:'t-guide',label:'상담 가이드'},{id:'t-board',label:'사내 게시판'},
+      {id:'a-bonbu',label:'본부 현황'},{id:'a-sil',label:'실별 현황'},
+      {id:'a-team',label:'팀별 관리'},{id:'a-db',label:'전체 학생 DB'},
+      {id:'a-teacher',label:'선생님 현황'},{id:'a-perm',label:'권한 관리'},
+    ];
+    const adminNames=_PERM_ACCOUNTS.map(a=>a.name);
+    const mk=(pid,key,def)=>`<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" ${(pagePerms[pid]?pagePerms[pid][key]:def)?'checked':''} onchange="setPagePerm('${pid}','${key}',this.checked)" style="width:13px;height:13px;accent-color:var(--blue);cursor:pointer">${key==='view'?'보기':key==='edit'?'편집':'삭제'}</label>`;
+    const rows=pageList.map(p=>{
+      const perm=pagePerms[p.id]||{};
+      const sel=`<select class="select" style="min-height:26px;font-size:11px;max-width:90px" onchange="setPagePerm('${p.id}','admin',this.value)"><option value="">미지정</option>${adminNames.map(n=>`<option value="${n}"${perm.admin===n?' selected':''}>${n}</option>`).join('')}</select>`;
+      return [p.label,sel,mk(p.id,'view',true),mk(p.id,'edit',false),mk(p.id,'del',false)];
+    });
+    body=PANEL('페이지별 권한 설정',TABLE(['페이지','담당 관리자','보기','편집','삭제'],rows));
+  }
+  return H('권한 관리','계정 상태와 접근 권한을 관리합니다.','<button class="btn primary" onclick="showToast(\'계정 추가 폼 (데모)\')">+ 계정 추가</button>')+tabBar+body;
+},
+
 };
+
+/* ── 개강전 설문 응답 현황 테이블 ── */
+function buildPreSurveyResponseTable() {
+  const data = AppData.preSurveyData;
+  const students = studentDB || [];
+  const rows = students.map(s => {
+    const resp = data.responses[s.id];
+    const responded = resp && resp.answers && resp.answers.length > 0;
+    const levelTag = responded && resp.level
+      ? `<span class="psp-level-${resp.level}" style="font-size:11px;padding:2px 7px;border-radius:999px">${resp.level}</span>`
+      : '<span style="color:#9ca3af;font-size:12px">미응답</span>';
+    const riskCell = responded ? `<span style="color:${resp.riskCount>0?'#ef4444':'#22c55e'};font-weight:600">${resp.riskCount}개</span>` : '-';
+    const totalCell = responded ? `${resp.totalScore}점` : '-';
+    const actionBtn = `<button class="btn" style="font-size:11px;padding:2px 10px" onclick="openPreSurveyPopup('${s.name}')">상세 보기</button>`;
+    return [s.name, s.grade||'-', responded?'응답':'미응답', levelTag, riskCell, totalCell, actionBtn];
+  });
+  return `<section class="panel"><div class="panel-h"><span>개강 전 설문 응답 현황</span><div class="ph-right"><button class="btn" data-panel-toggle="presurvey-resp-body" onclick="togglePanel('presurvey-resp-body')" style="min-height:26px;font-size:11px;padding:0 10px">접기</button></div></div><div class="panel-b" id="presurvey-resp-body">${TABLE(['이름','학년','응답 여부','학생 분류','위험 답변','누적 점수',''], rows)}</div></section>`;
+}
+
+/* ── 개강전 설문 팝업 함수 ── */
+const PRE_SURVEY_ACTIONS = {
+  '병행학원 있음': { label: '병행 상황 파악', detail: '어떤 학원을 병행 중인지 확인 후, 밀당PT와의 역할 분리 필요성을 설명합니다.' },
+  '수업 방식 몰랐음': { label: '수업 방식 재안내', detail: '밀당PT 수업 구조(영상→문제→피드백)를 다시 안내하고 기대치를 맞춥니다.' },
+  '공부 의지 낮음': { label: '동기부여 면담', detail: '학습 목표를 함께 설정하고, 단기 성취 경험을 만들어 줍니다.' },
+  '학습 시간 부족': { label: '시간 계획 조율', detail: '주간 학습 스케줄을 함께 짜보고 현실적인 목표량을 재설정합니다.' },
+  '성적 하락 경험': { label: '학습 이력 점검', detail: '이전 성적 추이를 확인하고 원인을 분석하여 약점 보완 계획을 세웁니다.' },
+};
+
+function getPreSurveyMsg(type, name, grade) {
+  const gradeStr = grade ? `(${grade}) ` : '';
+  if (type === 'parent') {
+    return `안녕하세요, ${name} 학생 ${gradeStr}학부모님.\n밀당PT 개강을 앞두고 학습 환경 파악을 위한 짧은 설문을 보내드립니다.\n바쁘신 중에도 잠시 시간 내어 주시면 선생님이 더 잘 도와드릴 수 있습니다. 감사합니다 🙏`;
+  }
+  return `안녕하세요 ${name}! 밀당PT 시작 전에 너에 대해 조금 더 알고 싶어서 설문을 보냈어.\n솔직하게 답해줄수록 선생님이 더 잘 맞춰줄 수 있으니 편하게 답해줘 😊`;
+}
+
+function copyPreSurveyMsg(type) {
+  const name = document.getElementById('pspName').textContent;
+  const grade = document.getElementById('pspGrade').textContent;
+  const msg = getPreSurveyMsg(type, name, grade);
+  navigator.clipboard.writeText(msg).then(() => {
+    showPspToast((type === 'parent' ? '학부모' : '학생') + ' 메시지 복사 완료');
+  }).catch(() => {
+    showPspToast('복사 실패 — 직접 선택해 주세요');
+  });
+}
+
+function showPspToast(msg) {
+  const t = document.getElementById('pspToast');
+  const l = document.getElementById('pspToastLabel');
+  if (!t || !l) return;
+  l.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function getActionItems(answers) {
+  if (!answers) return [];
+  const items = [];
+  const seen = new Set();
+  answers.forEach(a => {
+    if (!a.risk) return;
+    const ans = Array.isArray(a.ans) ? a.ans.join(' ') : (a.ans || '');
+    let matched = false;
+    Object.keys(PRE_SURVEY_ACTIONS).forEach(key => {
+      if (!seen.has(key) && ans.includes(key.slice(0, 4))) {
+        items.push(PRE_SURVEY_ACTIONS[key]);
+        seen.add(key);
+        matched = true;
+      }
+    });
+    if (!matched) {
+      const fallback = a.no === 6 ? '병행학원 있음' : a.no === 8 ? '수업 방식 몰랐음' : null;
+      if (fallback && PRE_SURVEY_ACTIONS[fallback] && !seen.has(fallback)) {
+        items.push(PRE_SURVEY_ACTIONS[fallback]);
+        seen.add(fallback);
+      }
+    }
+  });
+  return items;
+}
+
+function openPreSurveyPopup(studentName) {
+  const data = AppData.preSurveyData;
+  const st = studentDB.find(s => s.name === studentName);
+  const resp = st ? data.responses[st.id] : null;
+
+  document.getElementById('pspName').textContent = studentName || '-';
+  document.getElementById('pspGrade').textContent = st ? (st.grade || '') : '';
+
+  const responded = resp && resp.answers && resp.answers.length > 0;
+  document.getElementById('pspResp').textContent = responded ? '응답 완료' : '미응답';
+  document.getElementById('pspResp').style.color = responded ? '#22c55e' : '#ef4444';
+
+  // status
+  const levelEl = document.getElementById('pspLevel');
+  if (responded && resp.level) {
+    levelEl.innerHTML = `<span class="psp-level-${resp.level}">${resp.level}</span>`;
+    document.getElementById('pspRisk').textContent = (resp.riskCount || 0) + '개';
+    document.getElementById('pspScore').textContent = '-';
+    document.getElementById('pspTotal').textContent = (resp.totalScore || 0) + '점';
+  } else {
+    levelEl.textContent = '-';
+    document.getElementById('pspRisk').textContent = '-';
+    document.getElementById('pspScore').textContent = '-';
+    document.getElementById('pspTotal').textContent = '-';
+  }
+
+  // Q&A body — table format
+  const qaEl = document.getElementById('pspQaBody');
+  if (responded) {
+    const rows = data.questions.map((q, i) => {
+      const a = resp.answers[i];
+      const isRisk = a && a.risk;
+      const ansText = a ? (Array.isArray(a.ans) ? a.ans.join(', ') : a.ans) : '—';
+      const score = (a && a.score != null) ? a.score : '-';
+      const riskIcon = isRisk
+        ? '<i class="ti ti-check psp-risk-check"></i>'
+        : '<i class="ti ti-minus psp-safe-check"></i>';
+      return `<tr class="${isRisk ? 'psp-row-risk' : ''}">
+        <td>${q.no}</td>
+        <td>${q.short || q.q}</td>
+        <td>${ansText}</td>
+        <td>${score}</td>
+        <td>${riskIcon}</td>
+      </tr>`;
+    }).join('');
+    qaEl.innerHTML = `<table class="psp-qa-table">
+      <thead><tr>
+        <th>문항</th><th>질문</th><th>답변</th><th>예민도</th><th>위험</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  } else {
+    qaEl.innerHTML = '<div style="padding:16px;color:#9ca3af;text-align:center;">설문 미응답 상태입니다.</div>';
+  }
+
+  // Action items
+  const actionEl = document.getElementById('pspActionBody');
+  const actionItems = responded ? getActionItems(resp.answers) : [];
+  if (actionItems.length > 0) {
+    actionEl.innerHTML = '<div class="psp-action-title">권장 대응 리스트</div>' +
+      actionItems.map(item => `<label class="psp-action-check">
+        <input type="checkbox">
+        <span class="psp-action-text"><b>${item.label}</b><small>${item.detail}</small></span>
+      </label>`).join('');
+  } else {
+    actionEl.innerHTML = '';
+  }
+
+  document.getElementById('preSurveyPopup').classList.add('show');
+}
+
+function closePreSurveyPopup(e) {
+  if (e && e.target !== document.getElementById('preSurveyPopup')) return;
+  document.getElementById('preSurveyPopup').classList.remove('show');
+}
+function closeActionPopup(e) {
+  if (e && e.target !== document.getElementById('actionPopup')) return;
+  document.getElementById('actionPopup').classList.remove('show');
+}
 </script>
+
+<!-- 액션 상세 팝업 -->
+<div class="ap-overlay" id="actionPopup" onclick="closeActionPopup(event)">
+  <div class="ap-box" id="actionPopupBox">
+    <div class="ap-head">
+      <div class="ap-head-left">
+        <h3 id="od-title">액션 상세</h3>
+        <p id="od-meta"></p>
+      </div>
+      <span class="tag b" id="od-status"></span>
+    </div>
+    <div class="ap-scores">
+      <div class="ap-score-seg"><label>위험군 점수</label><strong id="od-rscore">-<span>점</span></strong></div>
+      <div class="ap-score-seg"><label>누적 점수</label><strong id="od-tscore">-<span>점</span></strong></div>
+    </div>
+    <div class="ap-body" id="od-body"></div>
+    <button class="ap-close" onclick="closeActionPopup(null)"><i class="ti ti-x"></i></button>
+  </div>
+</div>
+<!-- 개강전 설문 팝업 -->
+<div class="srp-overlay" id="preSurveyPopup" onclick="closePreSurveyPopup(event)">
+  <div class="srp-box" id="preSurveyBox">
+    <div class="psp-toast" id="pspToast">
+      <i class="ti ti-check"></i> <span id="pspToastLabel">복사 완료</span>
+    </div>
+    <div class="psp-top">
+      <div class="psp-meta-row">
+        <span class="psp-tag-survey">개강 전 설문</span>
+        <span class="psp-tag-day" id="pspDay">개강 3일차</span>
+      </div>
+      <div class="psp-name-row">
+        <span class="psp-name" id="pspName">-</span>
+        <span class="psp-grade" id="pspGrade"></span>
+      </div>
+      <div class="psp-send-row">
+        <button class="psp-send-btn" onclick="copyPreSurveyMsg('parent')">
+          <i class="ti ti-send"></i> 학부모 발송
+        </button>
+        <button class="psp-send-btn" onclick="copyPreSurveyMsg('student')">
+          <i class="ti ti-send"></i> 학생 발송
+        </button>
+        <span class="psp-resp" id="pspResp"></span>
+      </div>
+    </div>
+    <div class="psp-status-row">
+      <div class="psp-stat-seg">
+        <div class="psp-stat-label">학생 분류</div>
+        <div id="pspLevel"></div>
+      </div>
+      <div class="psp-stat-seg">
+        <div class="psp-stat-label">위험 답변</div>
+        <div class="psp-stat-val" id="pspRisk">-</div>
+      </div>
+      <div class="psp-stat-seg">
+        <div class="psp-stat-label">예민도 점수</div>
+        <div class="psp-stat-val" id="pspScore">-</div>
+      </div>
+      <div class="psp-stat-seg">
+        <div class="psp-stat-label">누적 점수</div>
+        <div class="psp-stat-val" id="pspTotal">-</div>
+      </div>
+    </div>
+    <div class="psp-qa" id="pspQaBody"></div>
+    <div class="psp-action" id="pspActionBody"></div>
+    <button class="psp-close" onclick="closePreSurveyPopup(null)">
+      <i class="ti ti-x"></i>
+    </button>
+  </div>
+</div>
 </body>
 </html>
