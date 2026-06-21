@@ -337,6 +337,24 @@ body.admin-theme{
 .kc-detail-row{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:#444}
 .kc-detail-row .dot{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:6px}
 .kc-empty{font-size:12px;color:#9ca3af;text-align:center;padding:18px 0}
+/* 스코어카드 + 풀폭 차트 (KPI 추세 · 총 PT수 전용) */
+.kc-split{display:grid;grid-template-columns:184px 1fr;gap:20px;align-items:center}
+.kc-chart{min-width:0;width:100%}
+.kc-score{align-self:center}
+.kc-score-inner{display:flex;flex-direction:column;gap:16px}
+.kc-sc-row{display:flex;flex-direction:column;gap:2px}
+.kc-sc-name{display:flex;align-items:center;gap:7px;font-size:12px;color:#555;line-height:1}
+.kc-sc-sw{display:inline-block;width:18px;height:0;border-top:2px solid currentColor;border-radius:2px}
+.kc-sc-sw.dash{border-top-style:dashed}
+.kc-sc-val{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.02em}
+.kc-sc-delta{font-size:12px;font-weight:700}
+@media(max-width:640px){.kc-split{grid-template-columns:1fr}.kc-score-inner{flex-direction:row;flex-wrap:wrap;gap:18px}}
+/* 초광폭 방지: a-bonbu 대시보드 블록 가운데 정렬 */
+#content[data-page="a-bonbu"]>.page-head,
+#content[data-page="a-bonbu"]>.kdash-head,
+#content[data-page="a-bonbu"]>.grid,
+#content[data-page="a-bonbu"]>.kc,
+#content[data-page="a-bonbu"]>.kdash-sec{max-width:1200px;margin-left:auto;margin-right:auto}
 @media(max-width:860px){.kc-grid2{grid-template-columns:1fr}}
 /* ── GRID ── */
 .grid{display:grid;gap:16px}
@@ -1441,6 +1459,7 @@ function go(id){
   $$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.page===id));
   if(id==='a-team'){ $$('.tm-nav').forEach(x=>x.classList.toggle('active',x.dataset.team===tmState.team)); }
   $('#content').innerHTML=pages[id]?pages[id]():'<div style="padding:40px;color:#9ca3af">준비 중입니다.</div>';
+  $('#content').dataset.page=id;
   $('#content').scrollTop=0;
   closeSidebar();
   if(id==='a-bonbu') kdashRender();
@@ -5800,7 +5819,9 @@ function kFilterSelect(onchange, value){
  *       unit, selectable:('in'|'out'|null), selIdx, ariaLabel}            */
 function drawLine(elId, cfg){
   const el = document.getElementById(elId); if (!el) return;
-  const W=600, H=cfg.H||210, PL=46, PR=16, PT=18, PB=26;
+  // fitWidth: 뷰박스 폭을 컨테이너 실제 픽셀폭에 맞춰 풀폭 렌더(왜곡 없이 1:1). 미지정 시 기존 600 고정.
+  const W = cfg.fitWidth ? Math.max(360, Math.round(el.clientWidth||el.getBoundingClientRect().width||600)) : 600;
+  const H=cfg.H||210, PL=46, PR=16, PT=18, PB=26;
   const labels = cfg.labels, series = cfg.series, unit = cfg.unit||'';
   const n = labels.length, xs = (W-PL-PR)/(n-1||1);
   const xAt = i => PL + i*xs;
@@ -5956,6 +5977,32 @@ function kcCard(id, title, filterHtml, legendHtml, bodyHtml){
   return `<section class="kc" aria-label="${title}"><div class="kc-h"><div class="kc-title">${title}</div>${filterHtml}</div>${legendHtml}<div class="kc-b">${bodyHtml}</div></section>`;
 }
 
+/* ── 공통 스코어카드 (시리즈 배열만 받아 KPI·총PT 양쪽 재사용) ──
+ * series: [{name,color,dash,values,goodDir:'up'|'down'}]  (순서 = 차트 범례 순서)
+ * opts.unit: '%'(KPI) | '명'(총PT). 증감색은 "좋은 방향" 기준.            */
+function kScoreCard(series, opts){
+  opts = opts || {};
+  const unit = opts.unit || '';
+  const ariaParts = [];
+  const rows = series.map(s=>{
+    const cur = s.values[s.values.length-1], d = cur - s.values[0];
+    const good = (s.goodDir==='down') ? d<0 : d>0;            // 좋은 방향 도달 여부
+    const dcolor = d===0 ? '#9ca3af' : (good ? '#1C7D55' : '#C8323E');
+    const arrow = d>0 ? '▲' : d<0 ? '▼' : '–';               // 화살표는 실제 방향
+    const curTxt = unit==='%' ? kFmt(cur,'%') : Math.round(cur).toLocaleString();
+    let dTxt;
+    if (d===0) dTxt = unit==='%' ? '0%p' : '0';
+    else if (unit==='%'){ const a=Math.abs(d); dTxt = (d>0?'+':'-') + (Number.isInteger(a)?a:a.toFixed(1)) + '%p'; }
+    else dTxt = (d>0?'+':'-') + Math.abs(Math.round(d)).toLocaleString();
+    ariaParts.push(`${s.name} ${curTxt}, 시작 대비 ${dTxt}`);
+    const sw = `<span class="kc-sc-sw${s.dash?' dash':''}" style="color:${s.color}"></span>`;
+    return `<div class="kc-sc-row"><div class="kc-sc-name">${sw}<span>${s.name}</span></div>`
+      + `<div class="kc-sc-val">${curTxt}</div>`
+      + `<div class="kc-sc-delta" style="color:${dcolor}">${arrow} ${dTxt}</div></div>`;
+  }).join('');
+  return { html:`<div class="kc-score-inner">${rows}</div>`, aria: ariaParts.join('; ') };
+}
+
 /* ── 섹션 헤더: "KPI 대시보드" 제목(좌) + 기간 선택(우) ──
  * 기간 선택은 상단 KPI 수치 카드와 아래 KPI 추세 차트에 함께 적용된다. */
 function kdashHeader(){
@@ -5974,20 +6021,22 @@ function kdashHeader(){
   </div>`;
 }
 
-/* ── ① KPI 추세 차트 (KPI 수치 카드 바로 아래) ── */
+/* ── ① KPI 추세 차트 (KPI 수치 카드 바로 아래) · 좌측 스코어카드 + 우측 풀폭 차트 ── */
 function kdashKpiTrend(){
-  const kpiLeg = kLegend([{name:'재수강률',color:KCOL.growth},{name:'연장률',color:KCOL.regular},{name:'신규전액환불률',color:KCOL.refund,dash:true}]);
-  return kcCard('kc-kpi','KPI 추세', kFilterSelect("kdashSetSubj('kpi',this.value)",kdash.kpiSubj), kpiLeg,
-    `<div id="kc-kpi-c"></div><div class="kc-note">좌측 단일 % 축 · 데이터 없는 중간 구간은 물결(≈)로 생략 — 위·아래 구간의 칸당 % 폭이 달라 기울기 절대 비교는 불가합니다. (상단 기간 선택을 따릅니다)</div>`);
+  // 상단 범례 제거 — 스코어카드가 색·값을 함께 보여주므로 범례 역할 대체
+  return kcCard('kc-kpi','KPI 추세', kFilterSelect("kdashSetSubj('kpi',this.value)",kdash.kpiSubj), '',
+    `<div class="kc-split"><div class="kc-score" id="kc-kpi-score" role="img"></div><div class="kc-chart"><div id="kc-kpi-c"></div></div></div>`
+    + `<div class="kc-note">좌측 단일 % 축 · 데이터 없는 중간 구간은 물결(≈)로 생략 — 위·아래 구간의 칸당 % 폭이 달라 기울기 절대 비교는 불가합니다. (상단 기간 선택을 따릅니다)</div>`);
 }
 
 /* ── SV PT수 섹션 (② 총 ③유입 ④이탈) ── */
 function svPtSection(){
-  const totalLeg = kLegend([{name:'전체',color:KCOL.sum},{name:'수학',color:KCOL.growth},{name:'영어',color:KCOL.amber},{name:'국어',color:KCOL.teukgang,dash:true}]);
   const inLeg = kLegend([{name:'전체',color:KCOL.sum},{name:'신규',color:KCOL.growth},{name:'특강',color:KCOL.teukgang,dash:true}]);
   const outLeg = kLegend([{name:'총',color:KCOL.sum},{name:'정규',color:KCOL.regular},{name:'특강',color:KCOL.teukgang,dash:true}]);
 
-  const totalCard = kcCard('kc-total','총 PT수', kFilterSelect("kdashSetSubj('total',this.value)",kdash.totalSubj), totalLeg, `<div id="kc-total-c"></div>`);
+  // 총 PT수: 범례 제거 + 좌측 스코어카드 / 우측 풀폭 차트
+  const totalCard = kcCard('kc-total','총 PT수', kFilterSelect("kdashSetSubj('total',this.value)",kdash.totalSubj), '',
+    `<div class="kc-split"><div class="kc-score" id="kc-total-score" role="img"></div><div class="kc-chart"><div id="kc-total-c"></div></div></div>`);
   const flowBody = (key) =>
     `<div class="kc-flow"><div id="kc-${key}-trend"></div>`
     + `<div class="kc-panel"><div class="kc-mini" id="kc-${key}-mini"></div><div class="kc-detail" id="kc-${key}-detail"></div></div></div>`;
@@ -6001,19 +6050,28 @@ function svPtSection(){
 function kdashRender(){
   if (!document.getElementById('kc-kpi-c')) return;
   const D = kdashData();
-  // ① KPI 추세 (broken axis · 상단 기간 선택을 따름)
+  // ① KPI 추세 (broken axis · 상단 기간 선택을 따름) — 좌 스코어카드 + 우 풀폭 차트
   const KL = D.kpi.labels, last = KL.length-1;
-  drawLine('kc-kpi-c', { labels:KL, H:248, mode:'broken', unit:'%', series:[
-    { name:'재수강률', color:KCOL.growth,  values:D.kpi.rr },
-    { name:'연장률',   color:KCOL.regular, values:D.kpi.extend },
-    { name:'신규전액환불률', color:KCOL.refund, values:D.kpi.refund, dash:true }
-  ], ariaLabel:`재수강률 ${kFmt(D.kpi.rr[last],'%')}, 연장률 ${kFmt(D.kpi.extend[last],'%')}, 신규전액환불률 ${kFmt(D.kpi.refund[last],'%')} (${KL[last]} 기준). 중간 구간 생략 축.` });
-  // ② 총 PT수
-  const totalSeries = kdash.totalSubj==='전체'
+  const kpiSeries = [
+    { name:'재수강률', color:KCOL.growth,  values:D.kpi.rr,     goodDir:'up' },
+    { name:'연장률',   color:KCOL.regular, values:D.kpi.extend, goodDir:'up' },
+    { name:'신규전액환불률', color:KCOL.refund, values:D.kpi.refund, dash:true, goodDir:'down' }
+  ];
+  const kpiSc = kScoreCard(kpiSeries, { unit:'%' });
+  const kpiScEl = document.getElementById('kc-kpi-score');
+  if (kpiScEl){ kpiScEl.innerHTML = kpiSc.html; kpiScEl.setAttribute('aria-label', 'KPI 추세 요약 — ' + kpiSc.aria + ` (${KL[last]} 기준)`); }
+  drawLine('kc-kpi-c', { labels:KL, H:248, mode:'broken', unit:'%', fitWidth:true, series:kpiSeries,
+    ariaLabel:`재수강률 ${kFmt(D.kpi.rr[last],'%')}, 연장률 ${kFmt(D.kpi.extend[last],'%')}, 신규전액환불률 ${kFmt(D.kpi.refund[last],'%')} (${KL[last]} 기준). 중간 구간 생략 축.` });
+  // ② 총 PT수 — 좌 스코어카드 + 우 풀폭 차트 (전 과목 증가=좋음)
+  const totalSeries = (kdash.totalSubj==='전체'
     ? [{name:'전체',color:KCOL.sum,values:D.total.전체},{name:'수학',color:KCOL.growth,values:D.total.수학},{name:'영어',color:KCOL.amber,values:D.total.영어},{name:'국어',color:KCOL.teukgang,values:D.total.국어,dash:true}]
-    : [{name:'전체',color:KCOL.sum,values:D.total.전체},{name:kdash.totalSubj,color:(kdash.totalSubj==='수학'?KCOL.growth:kdash.totalSubj==='영어'?KCOL.amber:KCOL.teukgang),values:D.total[kdash.totalSubj],dash:kdash.totalSubj==='국어'}];
-  drawLine('kc-total-c', { labels:KDASH_LABELS, H:210, mode:'round', unit:'명', series:totalSeries });
-  // ③ 유입 ④ 이탈
+    : [{name:'전체',color:KCOL.sum,values:D.total.전체},{name:kdash.totalSubj,color:(kdash.totalSubj==='수학'?KCOL.growth:kdash.totalSubj==='영어'?KCOL.amber:KCOL.teukgang),values:D.total[kdash.totalSubj],dash:kdash.totalSubj==='국어'}]
+  ).map(s=>({ ...s, goodDir:'up' }));
+  const totSc = kScoreCard(totalSeries, { unit:'명' });
+  const totScEl = document.getElementById('kc-total-score');
+  if (totScEl){ totScEl.innerHTML = totSc.html; totScEl.setAttribute('aria-label', '총 PT수 요약 — ' + totSc.aria); }
+  drawLine('kc-total-c', { labels:KDASH_LABELS, H:210, mode:'round', unit:'명', fitWidth:true, series:totalSeries });
+  // ③ 유입 ④ 이탈 (구조 유지 · 변경 없음)
   kdashRenderFlow('in', D);
   kdashRenderFlow('out', D);
 }
@@ -6044,14 +6102,16 @@ function kdashSelect(key, idx){
   kdashRenderFlow(key);
 }
 function kdashSetSubj(card, v){
-  if (card==='kpi'){ kdash.kpiSubj=v; kdashRender(); return; }
-  if (card==='total'){ kdash.totalSubj=v; const D=kdashData();
-    const ts = v==='전체'
-      ? [{name:'전체',color:KCOL.sum,values:D.total.전체},{name:'수학',color:KCOL.growth,values:D.total.수학},{name:'영어',color:KCOL.amber,values:D.total.영어},{name:'국어',color:KCOL.teukgang,values:D.total.국어,dash:true}]
-      : [{name:'전체',color:KCOL.sum,values:D.total.전체},{name:v,color:(v==='수학'?KCOL.growth:v==='영어'?KCOL.amber:KCOL.teukgang),values:D.total[v],dash:v==='국어'}];
-    drawLine('kc-total-c',{labels:KDASH_LABELS,H:210,mode:'round',unit:'명',series:ts}); return; }
+  if (card==='kpi'){ kdash.kpiSubj=v; kdashRender(); return; }       // 스코어카드+풀폭차트 일괄 갱신
+  if (card==='total'){ kdash.totalSubj=v; kdashRender(); return; }   // 스코어카드+풀폭차트 일괄 갱신
   if (card==='in'){ kdash.inSubj=v; kdashRenderFlow('in'); return; }
   if (card==='out'){ kdash.outSubj=v; kdashRenderFlow('out'); return; }
+}
+/* 리사이즈 시 풀폭 차트 폭 재측정(디바운스) — 1회만 등록 */
+if (!window.__kdashResizeBound){
+  window.__kdashResizeBound = true;
+  let __kdashRT;
+  window.addEventListener('resize', ()=>{ clearTimeout(__kdashRT); __kdashRT=setTimeout(()=>{ if(document.getElementById('kc-kpi-c')) kdashRender(); }, 160); });
 }
 
 const PAGE_CONFIGS = {
